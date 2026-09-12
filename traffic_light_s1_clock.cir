@@ -1,0 +1,110 @@
+* ============================================================================
+* traffic_light_s1_clock.cir
+* 交通灯控制器 —— 第 1 节: 脉冲信号发生器
+*
+* 电路: NE555 多谐振荡器(2Hz) -> 74LS74 二分频(1Hz) -> 74LS08 紧急时钟门控
+*
+* 接线(与 .kicad_sch / HTML 说明一致):
+*   NE555: VCC=+5V, GND=0, RST=+5V(不复位)
+*          DIS=RA与RB公共节点A, THR/TRI短接=RB与CT公共节点B, CON经0.01uF接地
+*   定时元件: +5V -> RA(6.2k) -> [A] -> RB(33k) -> [B] -> CT(10uF) -> GND
+*   f = 1/[(RA+2RB)*CT*ln2] = 1/[(6.2k+66k)*10u*0.693] ≈ 2.0 Hz
+*   74LS74: 1CLK<-555 OUT, 1D<-1Qn(反馈二分频), 1Q=CLK_1Hz(1Hz),
+*           1PRE/1CLR/2PRE/2CLR->+5V, 2D->GND
+*   74LS08: 1A<-CLK_1Hz, 1B<-EMG, 1Y=CLK_GATED=1Hz AND EMG
+*   EMG: SPDT开关, 正常位接+5V, 紧急位悬空, 经RPD(1k)下拉到GND
+*
+* 仿真器: ngspice (数字部分用行为级模型)
+* 运行:   ngspice traffic_light_s1_clock.cir
+* 期望: FLASH_2Hz≈2Hz, CLK_1Hz≈1Hz, 紧急期间(12~20s) CLK_GATED恒0
+* ============================================================================
+
+* ------------------------- 电源 -------------------------
+VCC_SRC VCC 0 DC 5
+
+* ------------------------- NE555 多谐振荡器 -------------------------
+* 引脚次序: GND TRG OUT RST CON THR DIS VCC
+RA    VCC  N_A    6.2k
+RB    N_A  N_B    33k
+CT    N_B  0      10u
+CCON  CON  0      0.01u
+
+X1 0 N_B FLASH_2HZ VCC CON N_B N_A VCC NE555
+
+* ------------------------- 74LS74 二分频 -------------------------
+* D=Qn 反馈 => 每个时钟上升沿翻转, 2Hz -> 1Hz
+X2 FLASH_2HZ N_QN N_Q N_QN DFF74
+
+* ------------------------- 74LS08 时钟门控 -------------------------
+X3 N_Q EMG CLK_GATED AND74
+
+* ------------------------- 紧急开关 EMG -------------------------
+* 正常: COM-A闭合, EMG≈+5V(=1); 紧急: 悬空, EMG由RPD下拉为0
+RPD    EMG  0        1k
+SW_EMG EMG  VCC EMG_CTRL 0 SWEMG
+* 演示激励: 0~12s 正常, 12~20s 紧急, 20s 后恢复
+VEMG   EMG_CTRL 0 PWL(0 5 12 5 12.05 0 20 0 20.05 5)
+
+* ========================= 子电路 =========================
+
+* ---- NE555 行为级模型 ----
+* 端口: GND TRG OUT RST CON THR DIS VCC
+.subckt NE555 GND TRG OUT RST CON THR DIS VCC
+* 内部 3x5k 基准分压: N23=2/3*VCC, N13=1/3*VCC
+R1   VCC N23 5k
+R2   N23 N13 5k
+R3   N13 GND 5k
+RCON CON N23 1
+* 比较器: S=1 当 TRG<1/3VCC (置位); R=1 当 THR>2/3VCC (复位)
+BS   S   0  V = 5*u(V(N13) - V(TRG))
+BR   R   0  V = 5*u(V(THR) - V(N23))
+* RST 低电平强制复位
+BRI  RI  0  V = V(R) + 5*u(2.5 - V(RST))
+* SR 锁存 (NOR 交叉耦合, 双稳)
+BQ   Q   0  V = 5*u(2.5 - V(RI) - V(QN))
+BQN  QN  0  V = 5*u(2.5 - V(S) - V(Q))
+* 输出缓冲
+BOUT OUT GND V = V(Q)
+* 放电晶体管: 锁存复位(QN=1)时导通, 拉低 DIS
+S1   DIS GND QN 0 SW555
+.model SW555 sw(von=2.0 voff=1.0 ron=25 roff=1e9)
+.ends NE555
+
+* ---- 74LS74 D 触发器 (主从结构, 上升沿触发) ----
+* 端口: CLK D Q QN
+.subckt DFF74 CLK D Q QN
+* /CLK: 主锁存器在 CLK 低电平期间透明
+BCK  CLKb 0 V = 5*u(2.5 - V(CLK))
+* 主级: CLK=0 时 M 跟随 D
+SM1  D M CLKb 0 SWLAT
+CM   M 0 1p
+* 从级: CLK=1 时 S 跟随 M (上升沿采样)
+SS1  M S CLK 0 SWLAT
+CS   S 0 1p
+* 输出缓冲
+BQ   Q  0  V = 5*u(V(S) - 2.5)
+BQN  QN 0  V = 5*u(2.5 - V(S))
+.model SWLAT sw(von=2.8 voff=2.0 ron=100 roff=1e9)
+.ends DFF74
+
+* ---- 74LS08 与门 ----
+* 端口: A B Y
+.subckt AND74 A B Y
+BY Y 0 V = 5*u(V(A)-2)*u(V(B)-2)
+.ends AND74
+
+* ========================= 分析 =========================
+* 初始: CT 电压为 0 (上电)
+.ic v(n_b)=0
+
+.tran 0.5m 30 0 0.5m
+
+* 频率验证: FLASH_2Hz 周期期望 ≈ 0.5s
+.measure tran t_flash TRIG v(FLASH_2HZ) VAL=2.5 RISE=4 TARG v(FLASH_2HZ) VAL=2.5 RISE=6
+* CLK_1Hz 周期期望 ≈ 1.0s
+.measure tran t_clk1  TRIG v(N_Q)     VAL=2.5 RISE=4 TARG v(N_Q)     VAL=2.5 RISE=6
+
+* 输出波形
+.print tran v(FLASH_2HZ) v(N_Q) v(CLK_GATED) v(EMG) v(N_B) v(N_A)
+
+.end
