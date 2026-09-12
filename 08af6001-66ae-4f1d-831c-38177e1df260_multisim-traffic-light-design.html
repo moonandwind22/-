@@ -1,0 +1,2389 @@
+<html lang="zh-CN" data-trae-theme="dark"><head>
+<meta charset="UTF-8">
+<title>交通灯 Multisim 设计 · 分节导航</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #ffffff; color: #1d1d1f; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.5; }
+  h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #1d1d1f; }
+  h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; color: #1d1d1f; }
+  .subtitle { color: #86868b; margin-bottom: 1.5rem; }
+  .section { margin-bottom: 2rem; }
+  .label { font-size: 0.7rem; color: #86868b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+  p { font-size: 13.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: #fff; }
+  th { padding: 8px 12px; text-align: left; }
+  td { padding: 7px 12px; border-bottom: 1px solid #e5e5e7; }
+  .thead-dark tr { background: #1d1d1f; color: #fff; }
+  .row-alt tr:nth-child(even) { background: #f5f5f7; }
+  .note-blue { background: #eff6ff; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #1e3a8a; line-height: 1.7; }
+  .note-red { background: #fef2f2; border: 1px solid #ef4444; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #7f1d1d; line-height: 1.7; margin-top: 8px; }
+  .note-gray { background: #f5f5f7; border-radius: 10px; padding: 12px 16px; font-size: 13.5px; line-height: 1.9; color: #1d1d1f; }
+  .note-yellow { background: #fefce8; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; color: #854d0e; line-height: 1.7; }
+  ul { font-size: 13.5px; line-height: 1.9; padding-left: 22px; }
+
+  /* 底部固定进度导航 */
+  .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #d1d1d6; padding: 10px 16px; display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; z-index: 100; box-shadow: 0 -2px 12px rgba(0,0,0,0.06); }
+  .pill { cursor: pointer; border-radius: 999px; padding: 6px 16px; font-size: 12.5px; font-weight: 600; background: #f5f5f7; color: #475569; border: 1px solid #e5e5e7; user-select: none; }
+  .pill:hover { border-color: #0071e3; color: #0071e3; }
+  .pill.active { background: #0071e3; color: #fff; border-color: #0071e3; }
+  .pill.done::before { content: "✓ "; }
+  .pill.disabled { cursor: not-allowed; opacity: 0.45; }
+  .pill.disabled:hover { border-color: #e5e5e7; color: #475569; }
+  .nav-hint { font-size: 11px; color: #aeaeb2; margin-left: 10px; }
+
+  section.screen { display: none; padding: 24px 24px 90px; max-width: 1100px; margin: 0 auto; }
+  section.screen.show { display: block; }
+  .sec-banner { background: #1d1d1f; color: #fff; border-radius: 12px; padding: 10px 18px; font-size: 13.5px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .sec-banner b { font-size: 14.5px; }
+</style>
+<style data-trae-edit-ui="true" id="trae-previewer-tools-styles">:root {
+  --trae-layer-image-download: 89990;
+  --trae-layer-browser-inspect-overlay: 90000;
+  --trae-layer-browser-inspect-highlight: 90010;
+  --trae-layer-browser-inspect-action: 90020;
+  --trae-layer-text-selection-action: 90030;
+  --trae-layer-edit-tooltip: 100095;
+}
+:root,
+[data-trae-theme='dark'] {
+  --trae-bg-base-default: #171717;
+  --trae-bg-menu: #222427;
+  --trae-bg-overlay-l1: rgba(255, 255, 255, 0.04);
+  --trae-bg-overlay-l2: rgba(255, 255, 255, 0.08);
+  --trae-bg-overlay-l3: rgba(255, 255, 255, 0.12);
+  --trae-bg-overlay-l4: rgba(255, 255, 255, 0.16);
+  --trae-bg-invert: #f5f9fe;
+  --trae-bg-invert-hover: #e8ecf0;
+  --trae-bg-invert-active: #dce0e4;
+  --trae-bg-invert-disabled: rgba(224, 226, 242, 0.12);
+  --bg-bg-brand-disabled: rgba(75, 63, 227, 0.35);
+  --bg-bg-brand-popup: rgba(106, 111, 255, 0.15);
+  --trae-border-l1: #e0e2f217;
+  --trae-border-l2: rgba(255, 255, 255, 0.12);
+  --trae-border-l3: rgba(255, 255, 255, 0.08);
+  --trae-border-neutral-l3: rgba(229, 229, 229, 0.20);
+  --trae-border-brand: #6a6fff;
+  --trae-text-default: #f5f9fe;
+  --trae-text-default-hover: #f5f9fe;
+  --trae-text-default-active: #f5f9fe;
+  --trae-text-secondary: rgba(245, 249, 254, 0.5);
+  --trae-text-tertiary: rgba(245, 249, 254, 0.4);
+  --trae-text-disabled: #666b75;
+  --trae-text-onaccent: #222427;
+  --trae-icon-default: #f5f9fe;
+  --trae-icon-secondary: rgba(245, 249, 254, 0.5);
+  --trae-icon-brand: #6a6fff;
+  --icon-icon-brand: var(--trae-icon-brand);
+  --trae-icon-onaccent: #222427;
+  --trae-status-success: #22c55e;
+  --trae-status-primary: #3b82f6;
+  --trae-status-primary-default: #387bff;
+  --trae-status-primary-surface-l1: rgba(53, 121, 255, 0.18);
+  --trae-status-success-default: #33c192;
+  --trae-status-success-surface-l1: rgba(0, 165, 110, 0.18);
+  --trae-status-error-default: #f65a5a;
+  --trae-status-error-surface-l1: rgba(246, 70, 70, 0.18);
+  --trae-annotation-marker-bg: #4b3fe3;
+  --trae-annotation-marker-text: #ffffff;
+  --trae-annotation-region-border: var(--trae-status-primary-default);
+  --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.32);
+  --trae-panel-shadow: 0px 6px 24px -1px rgba(0, 0, 0, 0.16);
+  --trae-floating-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.2);
+  --trae-shadow-elevation-50: 0 1px 2px -1px rgba(0, 0, 0, 0.45);
+  --text-text-default: var(--trae-text-default);
+  --text-text-onaccent: var(--trae-text-onaccent);
+  --bg-bg-menu: var(--trae-bg-menu);
+  --bg-bg-white: var(--trae-bg-menu);
+  --bg-bg-invert: var(--trae-bg-invert);
+  --bg-bg-invert-disabled: var(--trae-bg-invert-disabled);
+  --bg-bg-overlay-l1: var(--trae-bg-overlay-l1);
+  --bg-bg-overlay-l2: var(--trae-bg-overlay-l2);
+  --bg-bg-overlay-l3: var(--trae-bg-overlay-l3);
+  --border-border-neutral-l1: var(--trae-border-l1);
+  --border-border-brand: var(--trae-border-brand);
+  --border-border-brand-half: rgba(106, 111, 255, 0.4);
+  --status-error-default: var(--trae-status-error-default);
+  --status-error-surface-l1: var(--trae-status-error-surface-l1);
+  --radius-radius-md-12: 12px;
+  --spacers-spacer-0: 0;
+  --spacers-spacer-6: 6px;
+}
+
+[data-trae-theme='light'] {
+  --trae-bg-base-default: #fafafa;
+  --trae-bg-menu: #ffffff;
+  --trae-bg-overlay-l1: rgba(0, 0, 0, 0.04);
+  --trae-bg-overlay-l2: rgba(0, 0, 0, 0.06);
+  --trae-bg-overlay-l3: rgba(0, 0, 0, 0.08);
+  --trae-bg-overlay-l4: rgba(0, 0, 0, 0.12);
+  --trae-bg-invert: #1f2328;
+  --trae-bg-invert-hover: #32383f;
+  --trae-bg-invert-active: #444d56;
+  --trae-bg-invert-disabled: rgba(115, 115, 115, 0.20);
+  --bg-bg-brand-disabled: rgba(75, 63, 227, 0.22);
+  --bg-bg-brand-popup: rgba(170, 183, 255, 0.36);
+  --trae-border-l1: rgba(0, 0, 0, 0.1);
+  --trae-border-l2: rgba(0, 0, 0, 0.12);
+  --trae-border-l3: rgba(0, 0, 0, 0.08);
+  --trae-border-neutral-l3: rgba(115, 115, 115, 0.36);
+  --trae-border-brand: #4b3fe3;
+  --trae-text-default: #1f2328;
+  --trae-text-default-hover: #111214;
+  --trae-text-default-active: #111214;
+  --trae-text-secondary: rgba(31, 35, 40, 0.5);
+  --trae-text-tertiary: rgba(31, 35, 40, 0.4);
+  --trae-text-disabled: #a1a1a1;
+  --trae-text-onaccent: #ffffff;
+  --trae-icon-default: #1f2328;
+  --trae-icon-secondary: rgba(31, 35, 40, 0.5);
+  --trae-icon-brand: #4b3fe3;
+  --icon-icon-brand: var(--trae-icon-brand);
+  --trae-icon-onaccent: #ffffff;
+  --trae-status-success: #22c55e;
+  --trae-status-primary: #3b82f6;
+  --trae-status-primary-default: #2f74ff;
+  --trae-status-primary-surface-l1: rgba(47, 116, 255, 0.12);
+  --trae-status-success-default: #15a877;
+  --trae-status-success-surface-l1: rgba(64, 176, 139, 0.12);
+  --trae-status-error-default: #e8463a;
+  --trae-status-error-surface-l1: rgba(232, 70, 58, 0.12);
+  --trae-annotation-marker-bg: #4b3fe3;
+  --trae-annotation-marker-text: #ffffff;
+  --trae-annotation-region-border: var(--trae-status-primary-default);
+  --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.18);
+  --trae-panel-shadow: 0px 6px 24px -1px rgba(24, 24, 24, 0.06);
+  --trae-floating-shadow: 0px 2px 8px 0px rgba(24, 24, 24, 0.2);
+  --trae-shadow-elevation-50: 0 1px 2px -1px rgba(24, 24, 24, 0.08);
+  --text-text-default: var(--trae-text-default);
+  --text-text-onaccent: var(--trae-text-onaccent);
+  --bg-bg-menu: var(--trae-bg-menu);
+  --bg-bg-white: var(--trae-bg-menu);
+  --bg-bg-invert: var(--trae-bg-invert);
+  --bg-bg-invert-disabled: var(--trae-bg-invert-disabled);
+  --bg-bg-overlay-l1: var(--trae-bg-overlay-l1);
+  --bg-bg-overlay-l2: var(--trae-bg-overlay-l2);
+  --bg-bg-overlay-l3: var(--trae-bg-overlay-l3);
+  --border-border-neutral-l1: var(--trae-border-l1);
+  --border-border-brand: var(--trae-border-brand);
+  --border-border-brand-half: rgba(75, 63, 227, 0.4);
+  --status-error-default: var(--trae-status-error-default);
+  --status-error-surface-l1: var(--trae-status-error-surface-l1);
+  --radius-radius-md-12: 12px;
+  --spacers-spacer-0: 0;
+  --spacers-spacer-6: 6px;
+}
+
+@keyframes trae-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes trae-edit-bar-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes trae-edit-bar-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes trae-edit-panel-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.trae-edit-mode-active:not(.trae-edit-mode-dragging) body *:not([data-trae-edit-ui]):not([data-trae-edit-ui] *) {
+  transition: none !important;
+  animation-play-state: paused !important;
+}
+
+.trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel),
+.trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel) * {
+  pointer-events: none !important;
+}
+
+.trae-browser-inspect-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--trae-layer-browser-inspect-overlay);
+  pointer-events: auto;
+  background: transparent;
+}
+
+.trae-browser-inspect-highlight-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--trae-layer-browser-inspect-highlight);
+  display: none;
+}
+
+.trae-browser-inspect-highlight-tag {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 18px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background-color: var(--trae-status-success-default);
+  color: var(--trae-text-onaccent);
+  font-size: 12px;
+  font-weight: 400;
+  display: none;
+  align-items: center;
+  z-index: var(--trae-layer-browser-inspect-action);
+}
+
+.trae-browser-inspect-highlight-box-show {
+  display: flex;
+}
+
+.trae-browser-inspect-highlight-tag.trae-browser-inspect-highlight-box-show {
+  display: none;
+}
+
+.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show {
+  display: block !important;
+}
+
+.trae-browser-inspect-select-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: var(--trae-layer-browser-inspect-action);
+}
+
+.trae-browser-inspect-select-highlight-box {
+  background: transparent !important;
+}
+
+.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag {
+  background-color: var(--trae-status-success-default);
+}
+
+.trae-add-to-chat-card {
+  display: block;
+  overflow: hidden;
+  background: var(--trae-bg-menu);
+  border: 1px solid var(--trae-border-l1);
+  border-radius: 8px;
+  box-shadow: var(--trae-floating-shadow);
+  transition:
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trae-add-to-chat-content {
+  position: relative;
+  width: max-content;
+}
+
+.trae-fade-exit {
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.trae-fade-enter {
+  opacity: 1;
+  transition: opacity 0.2s ease-in;
+}
+
+.trae-buttons-view {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: transparent;
+}
+
+.trae-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.trae-action-button:hover {
+  background: var(--trae-bg-overlay-l2);
+}
+
+.trae-action-button:active {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-action-button:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-action-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--trae-icon-default);
+  flex-shrink: 0;
+}
+
+.trae-action-button-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--trae-text-default);
+  white-space: nowrap;
+}
+
+.trae-edit-toolbar-button-active {
+  background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important;
+  color: var(--icon-icon-brand, #4b3fe3) !important;
+  font-weight: bold !important;
+}
+
+.trae-edit-toolbar-button-active:hover {
+  background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important;
+}
+
+.trae-edit-toolbar button[data-action='alignment-dropdown']:hover,
+.trae-edit-toolbar button[data-action='text-align-dropdown']:hover,
+.trae-edit-toolbar button[data-action='font-decrease']:hover,
+.trae-edit-toolbar button[data-action='font-increase']:hover,
+.trae-edit-toolbar button[data-action^='align-']:hover {
+  border-radius: 8px;
+  background: var(--bg-bg-overlay-l1, rgba(115, 115, 115, 0.08)) !important;
+}
+
+.trae-edit-toolbar button[data-action='alignment-dropdown']:active,
+.trae-edit-toolbar button[data-action='text-align-dropdown']:active,
+.trae-edit-toolbar button[data-action='font-decrease']:active,
+.trae-edit-toolbar button[data-action='font-increase']:active,
+.trae-edit-toolbar button[data-action^='align-']:active {
+  border-radius: 8px;
+  background: var(--bg-bg-overlay-l2, rgba(115, 115, 115, 0.12)) !important;
+}
+
+.trae-comment-input {
+  background: transparent;
+  color: var(--trae-text-default);
+  caret-color: var(--trae-text-default);
+}
+
+.trae-comment-input::placeholder {
+  color: var(--trae-text-tertiary);
+}
+
+.trae-point-edit-bar,
+.trae-point-comment-input-bar,
+.trae-comment-only-panel {
+  transform-origin: top center;
+  will-change: opacity, transform;
+}
+
+.trae-edit-panel:not(.trae-edit-panel-leave) {
+  pointer-events: auto !important;
+}
+
+.trae-edit-bar-enter {
+  animation: trae-edit-bar-enter var(--transition-normal, 0.18s cubic-bezier(0.2, 0, 0, 1)) both;
+}
+
+.trae-edit-bar-leave {
+  pointer-events: none;
+  animation: trae-edit-bar-leave var(--transition-fast, 0.14s ease) both;
+}
+
+.trae-edit-panel-leave {
+  pointer-events: none;
+  animation: trae-edit-panel-leave var(--transition-fast, 0.14s ease) both;
+}
+
+.trae-edit-panel [data-trae-tooltip] {
+  position: relative;
+}
+
+.trae-edit-panel [data-trae-tooltip]::after {
+  content: attr(data-trae-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: var(--trae-layer-edit-tooltip);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--trae-bg-invert, var(--bg-bg-invert));
+  color: var(--trae-text-onaccent, var(--text-text-onaccent));
+  box-shadow: var(--trae-floating-shadow);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.039px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateX(-50%);
+  visibility: hidden;
+}
+
+.trae-edit-panel [data-trae-tooltip]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  z-index: var(--trae-layer-edit-tooltip);
+  width: 8px;
+  height: 4px;
+  background: var(--trae-bg-invert, var(--bg-bg-invert));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.trae-edit-panel [data-trae-tooltip]:hover::after,
+.trae-edit-panel [data-trae-tooltip]:focus-visible::after,
+.trae-edit-panel [data-trae-tooltip]:hover::before,
+.trae-edit-panel [data-trae-tooltip]:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.trae-comment-btn {
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trae-comment-btn:disabled {
+  cursor: not-allowed;
+}
+
+.trae-comment-btn:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-comment-btn-primary {
+  background: var(--trae-bg-invert);
+  color: var(--trae-text-onaccent);
+}
+
+.trae-comment-btn-primary:hover:not(:disabled) {
+  background: var(--trae-bg-invert-hover);
+}
+
+.trae-comment-btn-primary:active:not(:disabled) {
+  background: var(--trae-bg-invert-active);
+}
+
+.trae-comment-btn-primary:disabled {
+  background: var(--trae-bg-invert-disabled);
+  color: var(--trae-text-disabled);
+}
+
+.trae-comment-btn-secondary {
+  background: var(--trae-bg-overlay-l2);
+  color: var(--trae-text-default);
+}
+
+.trae-comment-btn-secondary:hover:not(:disabled) {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-comment-btn-secondary:active:not(:disabled) {
+  background: var(--trae-bg-overlay-l4);
+}
+
+.trae-comment-btn-secondary:disabled {
+  background: var(--trae-bg-overlay-l2);
+  color: var(--trae-text-disabled);
+}
+
+.trae-comment-btn-text {
+  background: transparent;
+  color: var(--trae-text-default);
+}
+
+.trae-comment-btn-text:hover:not(:disabled) {
+  border-radius: 8px;
+  background: var(--bg-bg-overlay-l1, var(--trae-bg-overlay-l1));
+  color: var(--trae-text-default-hover);
+}
+
+.trae-comment-btn-text:active:not(:disabled) {
+  border-radius: 8px;
+  background: var(--trae-bg-overlay-l2);
+  color: var(--trae-text-default-active);
+}
+
+.trae-comment-btn-text:disabled {
+  background: transparent;
+  color: var(--trae-text-disabled);
+}
+
+.trae-marking-btn {
+  justify-content: center;
+}
+
+.trae-marking-btn:hover:not(:disabled) {
+  background: var(--trae-bg-overlay-l1) !important;
+}
+
+.trae-marking-btn-active {
+  background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important;
+  color: var(--icon-icon-brand, var(--trae-icon-brand)) !important;
+}
+
+.trae-marking-btn-active:hover {
+  background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important;
+  color: var(--icon-icon-brand, var(--trae-icon-brand)) !important;
+}
+
+.trae-marking-btn:active:not(:disabled) {
+  background: var(--trae-bg-overlay-l2) !important;
+}
+
+.trae-marking-btn:disabled {
+  color: var(--trae-text-disabled) !important;
+  cursor: not-allowed !important;
+}
+
+.trae-action-button-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--trae-icon-secondary);
+  flex-shrink: 0;
+}
+
+.trae-shortcut-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.trae-shortcut-key {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 12px;
+  color: var(--trae-icon-secondary);
+}
+
+.trae-add-to-chat-divider {
+  width: 2px;
+  height: 12px;
+  padding: 0 6px;
+  box-sizing: content-box;
+  background-clip: content-box;
+  background-color: var(--trae-border-l2);
+  flex-shrink: 0;
+}
+
+.trae-editor-view {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  padding: 8px;
+  background: transparent;
+}
+
+.trae-editor-text-container {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  background: var(--trae-bg-overlay-l1);
+  border: 1px solid var(--trae-border-l3);
+  border-radius: 4px;
+  gap: 8px;
+}
+
+.trae-editor-textarea {
+  flex: 1;
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--trae-text-default);
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  max-height: 140px;
+}
+
+.trae-editor-textarea::placeholder {
+  color: var(--trae-text-tertiary);
+}
+
+.trae-editor-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.2s ease-out,
+    opacity 0.2s ease-out,
+    margin-top 0.2s ease-out;
+}
+
+.trae-editor-action-bar-visible {
+  max-height: 32px;
+  opacity: 1;
+  margin-top: 8px;
+}
+
+.trae-editor-cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 4px;
+  background: var(--trae-bg-overlay-l2);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trae-editor-cancel-button:hover {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-editor-cancel-button:active {
+  background: var(--trae-bg-overlay-l3);
+}
+
+.trae-editor-cancel-button:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-editor-cancel-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--trae-text-default);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.trae-editor-submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--trae-bg-invert);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.trae-editor-submit-button:hover {
+  background: var(--trae-bg-invert-hover);
+}
+
+.trae-editor-submit-button:active {
+  background: var(--trae-bg-invert-active);
+}
+
+.trae-editor-submit-button:focus-visible {
+  outline: 2px solid var(--trae-status-primary);
+  outline-offset: 1px;
+}
+
+.trae-editor-submit-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--trae-text-onaccent);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.trae-editor-submit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  color: var(--trae-icon-onaccent);
+  flex-shrink: 0;
+}
+
+.trae-success-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.trae-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--trae-status-success);
+  flex-shrink: 0;
+}
+
+.trae-success-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--trae-text-default);
+  user-select: none;
+}
+</style><style data-trae-pptx-captured-css="true">* { box-sizing: border-box; margin: 0px; padding: 0px; }
+body { background: rgb(255, 255, 255); color: rgb(29, 29, 31); font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.5; }
+h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(29, 29, 31); }
+h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; color: rgb(29, 29, 31); }
+.subtitle { color: rgb(134, 134, 139); margin-bottom: 1.5rem; }
+.section { margin-bottom: 2rem; }
+.label { font-size: 0.7rem; color: rgb(134, 134, 139); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+p { font-size: 13.5px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: rgb(255, 255, 255); }
+th { padding: 8px 12px; text-align: left; }
+td { padding: 7px 12px; border-bottom: 1px solid rgb(229, 229, 231); }
+.thead-dark tr { background: rgb(29, 29, 31); color: rgb(255, 255, 255); }
+.row-alt tr:nth-child(2n) { background: rgb(245, 245, 247); }
+.note-blue { background: rgb(239, 246, 255); border-radius: 10px; padding: 10px 16px; font-size: 13px; color: rgb(30, 58, 138); line-height: 1.7; }
+.note-red { background: rgb(254, 242, 242); border: 1px solid rgb(239, 68, 68); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: rgb(127, 29, 29); line-height: 1.7; margin-top: 8px; }
+.note-gray { background: rgb(245, 245, 247); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; line-height: 1.9; color: rgb(29, 29, 31); }
+.note-yellow { background: rgb(254, 252, 232); border-radius: 10px; padding: 10px 14px; font-size: 12.5px; color: rgb(133, 77, 14); line-height: 1.7; }
+ul { font-size: 13.5px; line-height: 1.9; padding-left: 22px; }
+.navbar { position: fixed; bottom: 0px; left: 0px; right: 0px; background: rgb(255, 255, 255); border-top: 1px solid rgb(209, 209, 214); padding: 10px 16px; display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; z-index: 100; box-shadow: rgba(0, 0, 0, 0.06) 0px -2px 12px; }
+.pill { cursor: pointer; border-radius: 999px; padding: 6px 16px; font-size: 12.5px; font-weight: 600; background: rgb(245, 245, 247); color: rgb(71, 85, 105); border: 1px solid rgb(229, 229, 231); user-select: none; }
+.pill:hover { border-color: rgb(0, 113, 227); color: rgb(0, 113, 227); }
+.pill.active { background: rgb(0, 113, 227); color: rgb(255, 255, 255); border-color: rgb(0, 113, 227); }
+.pill.done::before { content: "✓ "; }
+.pill.disabled { cursor: not-allowed; opacity: 0.45; }
+.pill.disabled:hover { border-color: rgb(229, 229, 231); color: rgb(71, 85, 105); }
+.nav-hint { font-size: 11px; color: rgb(174, 174, 178); margin-left: 10px; }
+section.screen { display: none; padding: 24px 24px 90px; max-width: 1100px; margin: 0px auto; }
+section.screen.show { display: block; }
+.sec-banner { background: rgb(29, 29, 31); color: rgb(255, 255, 255); border-radius: 12px; padding: 10px 18px; font-size: 13.5px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.sec-banner b { font-size: 14.5px; }
+:root { --trae-layer-image-download: 89990; --trae-layer-browser-inspect-overlay: 90000; --trae-layer-browser-inspect-highlight: 90010; --trae-layer-browser-inspect-action: 90020; --trae-layer-text-selection-action: 90030; --trae-layer-edit-tooltip: 100095; }
+:root, [data-trae-theme="dark"] { --trae-bg-base-default: #171717; --trae-bg-menu: #222427; --trae-bg-overlay-l1: rgba(255, 255, 255, 0.04); --trae-bg-overlay-l2: rgba(255, 255, 255, 0.08); --trae-bg-overlay-l3: rgba(255, 255, 255, 0.12); --trae-bg-overlay-l4: rgba(255, 255, 255, 0.16); --trae-bg-invert: #f5f9fe; --trae-bg-invert-hover: #e8ecf0; --trae-bg-invert-active: #dce0e4; --trae-bg-invert-disabled: rgba(224, 226, 242, 0.12); --bg-bg-brand-disabled: rgba(75, 63, 227, 0.35); --bg-bg-brand-popup: rgba(106, 111, 255, 0.15); --trae-border-l1: #e0e2f217; --trae-border-l2: rgba(255, 255, 255, 0.12); --trae-border-l3: rgba(255, 255, 255, 0.08); --trae-border-neutral-l3: rgba(229, 229, 229, 0.20); --trae-border-brand: #6a6fff; --trae-text-default: #f5f9fe; --trae-text-default-hover: #f5f9fe; --trae-text-default-active: #f5f9fe; --trae-text-secondary: rgba(245, 249, 254, 0.5); --trae-text-tertiary: rgba(245, 249, 254, 0.4); --trae-text-disabled: #666b75; --trae-text-onaccent: #222427; --trae-icon-default: #f5f9fe; --trae-icon-secondary: rgba(245, 249, 254, 0.5); --trae-icon-brand: #6a6fff; --icon-icon-brand: var(--trae-icon-brand); --trae-icon-onaccent: #222427; --trae-status-success: #22c55e; --trae-status-primary: #3b82f6; --trae-status-primary-default: #387bff; --trae-status-primary-surface-l1: rgba(53, 121, 255, 0.18); --trae-status-success-default: #33c192; --trae-status-success-surface-l1: rgba(0, 165, 110, 0.18); --trae-status-error-default: #f65a5a; --trae-status-error-surface-l1: rgba(246, 70, 70, 0.18); --trae-annotation-marker-bg: #4b3fe3; --trae-annotation-marker-text: #ffffff; --trae-annotation-region-border: var(--trae-status-primary-default); --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.32); --trae-panel-shadow: 0px 6px 24px -1px rgba(0, 0, 0, 0.16); --trae-floating-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.2); --trae-shadow-elevation-50: 0 1px 2px -1px rgba(0, 0, 0, 0.45); --text-text-default: var(--trae-text-default); --text-text-onaccent: var(--trae-text-onaccent); --bg-bg-menu: var(--trae-bg-menu); --bg-bg-white: var(--trae-bg-menu); --bg-bg-invert: var(--trae-bg-invert); --bg-bg-invert-disabled: var(--trae-bg-invert-disabled); --bg-bg-overlay-l1: var(--trae-bg-overlay-l1); --bg-bg-overlay-l2: var(--trae-bg-overlay-l2); --bg-bg-overlay-l3: var(--trae-bg-overlay-l3); --border-border-neutral-l1: var(--trae-border-l1); --border-border-brand: var(--trae-border-brand); --border-border-brand-half: rgba(106, 111, 255, 0.4); --status-error-default: var(--trae-status-error-default); --status-error-surface-l1: var(--trae-status-error-surface-l1); --radius-radius-md-12: 12px; --spacers-spacer-0: 0; --spacers-spacer-6: 6px; }
+[data-trae-theme="light"] { --trae-bg-base-default: #fafafa; --trae-bg-menu: #ffffff; --trae-bg-overlay-l1: rgba(0, 0, 0, 0.04); --trae-bg-overlay-l2: rgba(0, 0, 0, 0.06); --trae-bg-overlay-l3: rgba(0, 0, 0, 0.08); --trae-bg-overlay-l4: rgba(0, 0, 0, 0.12); --trae-bg-invert: #1f2328; --trae-bg-invert-hover: #32383f; --trae-bg-invert-active: #444d56; --trae-bg-invert-disabled: rgba(115, 115, 115, 0.20); --bg-bg-brand-disabled: rgba(75, 63, 227, 0.22); --bg-bg-brand-popup: rgba(170, 183, 255, 0.36); --trae-border-l1: rgba(0, 0, 0, 0.1); --trae-border-l2: rgba(0, 0, 0, 0.12); --trae-border-l3: rgba(0, 0, 0, 0.08); --trae-border-neutral-l3: rgba(115, 115, 115, 0.36); --trae-border-brand: #4b3fe3; --trae-text-default: #1f2328; --trae-text-default-hover: #111214; --trae-text-default-active: #111214; --trae-text-secondary: rgba(31, 35, 40, 0.5); --trae-text-tertiary: rgba(31, 35, 40, 0.4); --trae-text-disabled: #a1a1a1; --trae-text-onaccent: #ffffff; --trae-icon-default: #1f2328; --trae-icon-secondary: rgba(31, 35, 40, 0.5); --trae-icon-brand: #4b3fe3; --icon-icon-brand: var(--trae-icon-brand); --trae-icon-onaccent: #ffffff; --trae-status-success: #22c55e; --trae-status-primary: #3b82f6; --trae-status-primary-default: #2f74ff; --trae-status-primary-surface-l1: rgba(47, 116, 255, 0.12); --trae-status-success-default: #15a877; --trae-status-success-surface-l1: rgba(64, 176, 139, 0.12); --trae-status-error-default: #e8463a; --trae-status-error-surface-l1: rgba(232, 70, 58, 0.12); --trae-annotation-marker-bg: #4b3fe3; --trae-annotation-marker-text: #ffffff; --trae-annotation-region-border: var(--trae-status-primary-default); --trae-region-outside-mask-bg: rgba(0, 0, 0, 0.18); --trae-panel-shadow: 0px 6px 24px -1px rgba(24, 24, 24, 0.06); --trae-floating-shadow: 0px 2px 8px 0px rgba(24, 24, 24, 0.2); --trae-shadow-elevation-50: 0 1px 2px -1px rgba(24, 24, 24, 0.08); --text-text-default: var(--trae-text-default); --text-text-onaccent: var(--trae-text-onaccent); --bg-bg-menu: var(--trae-bg-menu); --bg-bg-white: var(--trae-bg-menu); --bg-bg-invert: var(--trae-bg-invert); --bg-bg-invert-disabled: var(--trae-bg-invert-disabled); --bg-bg-overlay-l1: var(--trae-bg-overlay-l1); --bg-bg-overlay-l2: var(--trae-bg-overlay-l2); --bg-bg-overlay-l3: var(--trae-bg-overlay-l3); --border-border-neutral-l1: var(--trae-border-l1); --border-border-brand: var(--trae-border-brand); --border-border-brand-half: rgba(75, 63, 227, 0.4); --status-error-default: var(--trae-status-error-default); --status-error-surface-l1: var(--trae-status-error-surface-l1); --radius-radius-md-12: 12px; --spacers-spacer-0: 0; --spacers-spacer-6: 6px; }
+@keyframes trae-spin { 
+  100% { transform: rotate(360deg); }
+}
+@keyframes trae-edit-bar-enter { 
+  0% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0px) scale(1); }
+}
+@keyframes trae-edit-bar-leave { 
+  0% { opacity: 1; transform: translateY(0px) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+@keyframes trae-edit-panel-leave { 
+  0% { opacity: 1; transform: translateY(0px) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+.trae-edit-mode-active:not(.trae-edit-mode-dragging) body :not([data-trae-edit-ui]):not([data-trae-edit-ui] *) { transition: none !important; animation-play-state: paused !important; }
+.trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel), .trae-edit-mode-reorder-hit-test [data-trae-edit-ui]:not(.trae-edit-pointer-shield):not(.trae-edit-panel) * { pointer-events: none !important; }
+.trae-browser-inspect-overlay { position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; z-index: var(--trae-layer-browser-inspect-overlay); pointer-events: auto; background: transparent; }
+.trae-browser-inspect-highlight-box { position: absolute; top: 0px; left: 0px; z-index: var(--trae-layer-browser-inspect-highlight); display: none; }
+.trae-browser-inspect-highlight-tag { position: absolute; left: 0px; top: 0px; height: 18px; padding: 0px 6px; box-sizing: border-box; border-radius: 4px; background-color: var(--trae-status-success-default); color: var(--trae-text-onaccent); font-size: 12px; font-weight: 400; display: none; align-items: center; z-index: var(--trae-layer-browser-inspect-action); }
+.trae-browser-inspect-highlight-box-show { display: flex; }
+.trae-browser-inspect-highlight-tag.trae-browser-inspect-highlight-box-show { display: none; }
+.trae-browser-inspect-select-button.trae-browser-inspect-highlight-box-show { display: block !important; }
+.trae-browser-inspect-select-button { position: absolute; top: 0px; left: 0px; display: none; z-index: var(--trae-layer-browser-inspect-action); }
+.trae-browser-inspect-select-highlight-box { background: transparent !important; }
+.trae-browser-inspect-select-highlight-box .trae-browser-inspect-highlight-tag { background-color: var(--trae-status-success-default); }
+.trae-add-to-chat-card { display: block; overflow: hidden; background: var(--trae-bg-menu); border: 1px solid var(--trae-border-l1); border-radius: 8px; box-shadow: var(--trae-floating-shadow); transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), height 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+.trae-add-to-chat-content { position: relative; width: max-content; }
+.trae-fade-exit { opacity: 0; transition: opacity 0.15s ease-out; }
+.trae-fade-enter { opacity: 1; transition: opacity 0.2s ease-in; }
+.trae-buttons-view { display: flex; align-items: center; gap: 6px; padding: 4px; background: transparent; }
+.trae-action-button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: transparent; border: none; border-radius: 4px; cursor: pointer; transform: none !important; transition: none !important; animation: auto ease 0s 1 normal none running none !important; }
+.trae-action-button:hover { background: var(--trae-bg-overlay-l2); }
+.trae-action-button:active { background: var(--trae-bg-overlay-l3); }
+.trae-action-button:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-action-button-icon { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--trae-icon-default); flex-shrink: 0; }
+.trae-action-button-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; color: var(--trae-text-default); white-space: nowrap; }
+.trae-edit-toolbar-button-active { background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important; color: var(--icon-icon-brand, #4b3fe3) !important; font-weight: bold !important; }
+.trae-edit-toolbar-button-active:hover { background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important; }
+.trae-edit-toolbar button[data-action="alignment-dropdown"]:hover, .trae-edit-toolbar button[data-action="text-align-dropdown"]:hover, .trae-edit-toolbar button[data-action="font-decrease"]:hover, .trae-edit-toolbar button[data-action="font-increase"]:hover, .trae-edit-toolbar button[data-action^="align-"]:hover { border-radius: 8px; background: var(--bg-bg-overlay-l1, rgba(115, 115, 115, 0.08)) !important; }
+.trae-edit-toolbar button[data-action="alignment-dropdown"]:active, .trae-edit-toolbar button[data-action="text-align-dropdown"]:active, .trae-edit-toolbar button[data-action="font-decrease"]:active, .trae-edit-toolbar button[data-action="font-increase"]:active, .trae-edit-toolbar button[data-action^="align-"]:active { border-radius: 8px; background: var(--bg-bg-overlay-l2, rgba(115, 115, 115, 0.12)) !important; }
+.trae-comment-input { background: transparent; color: var(--trae-text-default); caret-color: var(--trae-text-default); }
+.trae-comment-input::placeholder { color: var(--trae-text-tertiary); }
+.trae-point-edit-bar, .trae-point-comment-input-bar, .trae-comment-only-panel { transform-origin: center top; will-change: opacity, transform; }
+.trae-edit-panel:not(.trae-edit-panel-leave) { pointer-events: auto !important; }
+.trae-edit-bar-enter { animation: trae-edit-bar-enter var(--transition-normal, 0.18s cubic-bezier(0.2, 0, 0, 1)) both; }
+.trae-edit-bar-leave { pointer-events: none; animation: trae-edit-bar-leave var(--transition-fast, 0.14s ease) both; }
+.trae-edit-panel-leave { pointer-events: none; animation: trae-edit-panel-leave var(--transition-fast, 0.14s ease) both; }
+.trae-edit-panel [data-trae-tooltip] { position: relative; }
+.trae-edit-panel [data-trae-tooltip]::after { content: attr(data-trae-tooltip); position: absolute; left: 50%; bottom: calc(100% + 8px); z-index: var(--trae-layer-edit-tooltip); padding: 6px 10px; border-radius: 6px; background: var(--trae-bg-invert, var(--bg-bg-invert)); color: var(--trae-text-onaccent, var(--text-text-onaccent)); box-shadow: var(--trae-floating-shadow); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; letter-spacing: 0.039px; white-space: nowrap; pointer-events: none; box-sizing: border-box; opacity: 0; transform: translateX(-50%); visibility: hidden; }
+.trae-edit-panel [data-trae-tooltip]::before { content: ""; position: absolute; left: 50%; bottom: calc(100% + 5px); z-index: var(--trae-layer-edit-tooltip); width: 8px; height: 4px; background: var(--trae-bg-invert, var(--bg-bg-invert)); clip-path: polygon(0px 0px, 100% 0px, 50% 100%); transform: translateX(-50%); pointer-events: none; opacity: 0; visibility: hidden; }
+.trae-edit-panel [data-trae-tooltip]:hover::after, .trae-edit-panel [data-trae-tooltip]:focus-visible::after, .trae-edit-panel [data-trae-tooltip]:hover::before, .trae-edit-panel [data-trae-tooltip]:focus-visible::before { opacity: 1; visibility: visible; }
+.trae-comment-btn { justify-content: center; cursor: pointer; transition: background-color 0.15s; }
+.trae-comment-btn:disabled { cursor: not-allowed; }
+.trae-comment-btn:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-comment-btn-primary { background: var(--trae-bg-invert); color: var(--trae-text-onaccent); }
+.trae-comment-btn-primary:hover:not(:disabled) { background: var(--trae-bg-invert-hover); }
+.trae-comment-btn-primary:active:not(:disabled) { background: var(--trae-bg-invert-active); }
+.trae-comment-btn-primary:disabled { background: var(--trae-bg-invert-disabled); color: var(--trae-text-disabled); }
+.trae-comment-btn-secondary { background: var(--trae-bg-overlay-l2); color: var(--trae-text-default); }
+.trae-comment-btn-secondary:hover:not(:disabled) { background: var(--trae-bg-overlay-l3); }
+.trae-comment-btn-secondary:active:not(:disabled) { background: var(--trae-bg-overlay-l4); }
+.trae-comment-btn-secondary:disabled { background: var(--trae-bg-overlay-l2); color: var(--trae-text-disabled); }
+.trae-comment-btn-text { background: transparent; color: var(--trae-text-default); }
+.trae-comment-btn-text:hover:not(:disabled) { border-radius: 8px; background: var(--bg-bg-overlay-l1, var(--trae-bg-overlay-l1)); color: var(--trae-text-default-hover); }
+.trae-comment-btn-text:active:not(:disabled) { border-radius: 8px; background: var(--trae-bg-overlay-l2); color: var(--trae-text-default-active); }
+.trae-comment-btn-text:disabled { background: transparent; color: var(--trae-text-disabled); }
+.trae-marking-btn { justify-content: center; }
+.trae-marking-btn:hover:not(:disabled) { background: var(--trae-bg-overlay-l1) !important; }
+.trae-marking-btn-active { background: var(--bg-bg-brand-disabled, rgba(75, 63, 227, 0.22)) !important; color: var(--icon-icon-brand, var(--trae-icon-brand)) !important; }
+.trae-marking-btn-active:hover { background: var(--bg-bg-brand-popup, rgba(170, 183, 255, 0.36)) !important; color: var(--icon-icon-brand, var(--trae-icon-brand)) !important; }
+.trae-marking-btn:active:not(:disabled) { background: var(--trae-bg-overlay-l2) !important; }
+.trae-marking-btn:disabled { color: var(--trae-text-disabled) !important; cursor: not-allowed !important; }
+.trae-action-button-shortcut { display: flex; align-items: center; gap: 2px; color: var(--trae-icon-secondary); flex-shrink: 0; }
+.trae-shortcut-container { display: flex; align-items: center; gap: 2px; }
+.trae-shortcut-key { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 12px; color: var(--trae-icon-secondary); }
+.trae-add-to-chat-divider { width: 2px; height: 12px; padding: 0px 6px; box-sizing: content-box; background-clip: content-box; background-color: var(--trae-border-l2); flex-shrink: 0; }
+.trae-editor-view { display: flex; flex-direction: column; width: 320px; padding: 8px; background: transparent; }
+.trae-editor-text-container { display: flex; align-items: center; padding: 8px; background: var(--trae-bg-overlay-l1); border: 1px solid var(--trae-border-l3); border-radius: 4px; gap: 8px; }
+.trae-editor-textarea { flex: 1 1 0%; padding: 0px 2px; border: none; background: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 400; line-height: 20px; color: var(--trae-text-default); resize: none; outline: none; overflow-y: auto; max-height: 140px; }
+.trae-editor-textarea::placeholder { color: var(--trae-text-tertiary); }
+.trae-editor-action-bar { display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-height: 0px; opacity: 0; overflow: hidden; transition: max-height 0.2s ease-out, opacity 0.2s ease-out, margin-top 0.2s ease-out; }
+.trae-editor-action-bar-visible { max-height: 32px; opacity: 1; margin-top: 8px; }
+.trae-editor-cancel-button { display: flex; align-items: center; justify-content: center; height: 24px; padding: 0px 4px; background: var(--trae-bg-overlay-l2); border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.15s; }
+.trae-editor-cancel-button:hover { background: var(--trae-bg-overlay-l3); }
+.trae-editor-cancel-button:active { background: var(--trae-bg-overlay-l3); }
+.trae-editor-cancel-button:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-editor-cancel-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; color: var(--trae-text-default); white-space: nowrap; padding: 0px 4px; }
+.trae-editor-submit-button { display: flex; align-items: center; justify-content: center; height: 24px; padding: 0px 8px; background: var(--trae-bg-invert); border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.15s; }
+.trae-editor-submit-button:hover { background: var(--trae-bg-invert-hover); }
+.trae-editor-submit-button:active { background: var(--trae-bg-invert-active); }
+.trae-editor-submit-button:focus-visible { outline: 2px solid var(--trae-status-primary); outline-offset: 1px; }
+.trae-editor-submit-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 500; line-height: 16px; color: var(--trae-text-onaccent); white-space: nowrap; padding: 0px 4px; }
+.trae-editor-submit-icon { display: flex; align-items: center; justify-content: center; width: 12px; height: 12px; color: var(--trae-icon-onaccent); flex-shrink: 0; }
+.trae-success-view { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0px 12px; height: 32px; white-space: nowrap; }
+.trae-success-icon { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--trae-status-success); flex-shrink: 0; }
+.trae-success-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 400; line-height: 18px; color: var(--trae-text-default); user-select: none; }</style></head>
+<body>
+
+<!-- ================= 第 1 节 ================= -->
+<section id="s1" class="screen">
+  <div class="sec-banner"><b>第 1/6 节：脉冲信号发生器</b><span>预计 45 分钟 · 已完成</span></div>
+  <h2>脉冲信号发生器 —— 引脚级接线说明</h2>
+  <p class="subtitle">555 按仿真引脚名称（VCC / GND / OUT / RST / DIS / THR / TRI / CON）标注 · 三电路逐引脚说明</p>
+
+  <div class="section">
+    <div class="label">电路图总览（SVG）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1120 630" style="width:100%;min-width:860px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="560" y="32" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">第 1 节 · 脉冲信号发生器电路图</text>
+        <text x="560" y="52" text-anchor="middle" font-size="12" fill="#64748b">NE555 多谐振荡（2Hz）→ 74LS74 二分频（1Hz）→ 74LS08 紧急时钟门控</text>
+
+        <g stroke="#1d1d1f" stroke-width="2" fill="none">
+          <line x1="90" y1="61" x2="90" y2="105"></line>
+          <line x1="90" y1="155" x2="90" y2="205"></line>
+          <line x1="90" y1="190" x2="180" y2="190"></line>
+          <line x1="90" y1="255" x2="90" y2="285"></line>
+          <line x1="90" y1="260" x2="140" y2="260"></line>
+          <line x1="90" y1="297" x2="90" y2="315"></line>
+          <line x1="140" y1="240" x2="180" y2="240"></line>
+          <line x1="140" y1="240" x2="140" y2="280"></line>
+          <line x1="140" y1="280" x2="180" y2="280"></line>
+          <line x1="180" y1="330" x2="120" y2="330"></line>
+          <line x1="120" y1="330" x2="120" y2="345"></line>
+          <line x1="120" y1="357" x2="120" y2="375"></line>
+          <line x1="330" y1="180" x2="365" y2="180"></line>
+          <line x1="365" y1="148" x2="365" y2="180"></line>
+          <line x1="255" y1="123" x2="255" y2="150"></line>
+          <line x1="255" y1="400" x2="255" y2="418"></line>
+          <line x1="330" y1="270" x2="400" y2="270"></line>
+          <line x1="400" y1="270" x2="400" y2="215"></line>
+          <line x1="400" y1="215" x2="480" y2="215"></line>
+          <line x1="380" y1="270" x2="380" y2="243"></line>
+          <line x1="515" y1="170" x2="515" y2="140"></line>
+          <line x1="605" y1="170" x2="605" y2="140"></line>
+          <line x1="515" y1="140" x2="605" y2="140"></line>
+          <line x1="560" y1="170" x2="560" y2="140"></line>
+          <line x1="560" y1="121" x2="560" y2="140"></line>
+          <line x1="525" y1="350" x2="525" y2="368"></line>
+          <line x1="640" y1="300" x2="665" y2="300"></line>
+          <line x1="665" y1="300" x2="665" y2="395"></line>
+          <line x1="665" y1="395" x2="445" y2="395"></line>
+          <line x1="445" y1="395" x2="445" y2="300"></line>
+          <line x1="445" y1="300" x2="480" y2="300"></line>
+          <line x1="640" y1="215" x2="680" y2="215"></line>
+          <line x1="680" y1="215" x2="680" y2="150"></line>
+          <line x1="680" y1="150" x2="830" y2="150"></line>
+          <line x1="830" y1="150" x2="830" y2="225"></line>
+          <line x1="830" y1="225" x2="850" y2="225"></line>
+          <line x1="740" y1="295" x2="850" y2="295"></line>
+          <line x1="740" y1="295" x2="740" y2="315"></line>
+          <line x1="740" y1="360" x2="740" y2="378"></line>
+          <line x1="760" y1="255" x2="760" y2="228"></line>
+          <line x1="950" y1="260" x2="985" y2="260"></line>
+          <line x1="870" y1="200" x2="870" y2="175"></line>
+          <line x1="870" y1="320" x2="870" y2="338"></line>
+        </g>
+
+        <line x1="740" y1="295" x2="760" y2="255" stroke="#1d1d1f" stroke-width="2.5"></line>
+
+        <g fill="#DC2626">
+          <path d="M90,50 L84,61 L96,61 Z"></path>
+          <path d="M255,112 L249,123 L261,123 Z"></path>
+          <path d="M365,137 L359,148 L371,148 Z"></path>
+          <path d="M560,110 L554,121 L566,121 Z"></path>
+          <path d="M760,217 L754,228 L766,228 Z"></path>
+          <path d="M870,164 L864,175 L876,175 Z"></path>
+        </g>
+        <g font-size="11" font-weight="700" fill="#DC2626" text-anchor="middle">
+          <text x="90" y="42">+5V</text>
+          <text x="255" y="104">+5V</text>
+          <text x="365" y="129">+5V</text>
+          <text x="560" y="102">+5V</text>
+          <text x="760" y="209">+5V</text>
+          <text x="870" y="156">+5V</text>
+        </g>
+
+        <g stroke="#1d1d1f" stroke-width="2">
+          <line x1="243" y1="424" x2="267" y2="424"></line><line x1="249" y1="430" x2="261" y2="430"></line><line x1="253" y1="436" x2="257" y2="436"></line>
+          <line x1="78" y1="321" x2="102" y2="321"></line><line x1="84" y1="327" x2="96" y2="327"></line><line x1="86" y1="333" x2="94" y2="333"></line>
+          <line x1="108" y1="381" x2="132" y2="381"></line><line x1="114" y1="387" x2="126" y2="387"></line><line x1="116" y1="393" x2="124" y2="393"></line>
+          <line x1="513" y1="374" x2="537" y2="374"></line><line x1="519" y1="380" x2="531" y2="380"></line><line x1="521" y1="386" x2="529" y2="386"></line>
+          <line x1="728" y1="384" x2="752" y2="384"></line><line x1="734" y1="390" x2="746" y2="390"></line><line x1="736" y1="396" x2="744" y2="396"></line>
+          <line x1="858" y1="344" x2="882" y2="344"></line><line x1="864" y1="350" x2="876" y2="350"></line><line x1="866" y1="356" x2="874" y2="356"></line>
+        </g>
+
+        <rect x="82" y="105" width="16" height="50" fill="#E2E8F0" stroke="#334155" stroke-width="1.8"></rect>
+        <rect x="82" y="205" width="16" height="50" fill="#E2E8F0" stroke="#334155" stroke-width="1.8"></rect>
+        <rect x="732" y="315" width="16" height="45" fill="#E2E8F0" stroke="#334155" stroke-width="1.8"></rect>
+        <g stroke="#334155" stroke-width="3">
+          <line x1="76" y1="285" x2="104" y2="285"></line><line x1="76" y1="297" x2="104" y2="297"></line>
+          <line x1="106" y1="345" x2="134" y2="345"></line><line x1="106" y1="357" x2="134" y2="357"></line>
+        </g>
+        <text x="62" y="290" font-size="13" font-weight="700" fill="#334155">+</text>
+
+        <rect x="180" y="150" width="150" height="250" rx="8" fill="#FFF7E6" stroke="#B45309" stroke-width="2"></rect>
+        <rect x="480" y="170" width="160" height="180" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+        <path d="M850,200 L890,200 A60,60 0 0 1 890,320 L850,320 Z" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></path>
+
+        <g font-size="10.5" fill="#374151">
+          <text x="188" y="194">DIS</text><text x="188" y="244">THR</text><text x="188" y="284">TRI</text><text x="188" y="334">CON</text>
+          <text x="322" y="184" text-anchor="end">RST</text>
+          <text x="322" y="274" text-anchor="end" font-weight="700" fill="#B45309">OUT</text>
+          <text x="490" y="219">1CLK</text><text x="490" y="304">1D</text>
+          <text x="630" y="219" text-anchor="end" font-weight="700" fill="#1D4ED8">1Q</text>
+          <text x="630" y="304" text-anchor="end">1Q̄</text>
+          <text x="862" y="229">1A</text><text x="862" y="299">1B</text>
+        </g>
+        <g text-anchor="middle">
+          <text x="255" y="222" font-size="14" font-weight="700" fill="#1d1d1f">NE555</text>
+          <text x="255" y="244" font-size="11" fill="#64748b">多谐振荡器</text>
+          <text x="255" y="164" font-size="9" fill="#92400E">VCC</text>
+          <text x="255" y="393" font-size="9" fill="#92400E">GND</text>
+          <text x="560" y="252" font-size="14" font-weight="700" fill="#1d1d1f">74LS74</text>
+          <text x="560" y="274" font-size="11" fill="#64748b">二分频 ÷2</text>
+          <text x="560" y="184" font-size="9" fill="#1E40AF">VCC</text>
+          <text x="560" y="343" font-size="9" fill="#1E40AF">GND</text>
+          <text x="505" y="161" font-size="9" fill="#1E40AF" text-anchor="end">1CLR̄</text>
+          <text x="617" y="161" font-size="9" fill="#1E40AF">1PR̄</text>
+          <text x="890" y="250" font-size="13" font-weight="700" fill="#1d1d1f">74LS08</text>
+          <text x="890" y="270" font-size="10.5" fill="#64748b">与门</text>
+        </g>
+
+        <g font-size="12" fill="#0f172a">
+          <text x="104" y="133">R<tspan dy="3" font-size="9">A</tspan><tspan dy="-3"> 6.2kΩ</tspan></text>
+          <text x="104" y="233">R<tspan dy="3" font-size="9">B</tspan><tspan dy="-3"> 33kΩ</tspan></text>
+          <text x="108" y="306">C<tspan dy="3" font-size="9">T</tspan><tspan dy="-3"> 10µF</tspan></text>
+          <text x="40" y="354" font-size="11">0.01µF</text>
+          <text x="752" y="342" font-size="11">1kΩ</text>
+          <text x="112" y="252" font-size="9.5" fill="#64748b">节点A</text>
+          <text x="610" y="390" font-size="10" fill="#64748b" text-anchor="middle">Q̄ → D 反馈</text>
+          <text x="700" y="243" font-size="9.5" fill="#DC2626" text-anchor="end">紧急·悬空</text>
+          <text x="780" y="243" font-size="9.5" fill="#16A34A">正常·+5V</text>
+        </g>
+
+        <g fill="#1d1d1f">
+          <circle cx="90" cy="190" r="3.2"></circle>
+          <circle cx="90" cy="260" r="3.2"></circle>
+          <circle cx="140" cy="260" r="3.2"></circle>
+          <circle cx="560" cy="140" r="3.2"></circle>
+          <circle cx="380" cy="270" r="3.2"></circle>
+          <circle cx="740" cy="295" r="4"></circle>
+        </g>
+        <g fill="#334155">
+          <circle cx="720" cy="255" r="3"></circle>
+          <circle cx="760" cy="255" r="3"></circle>
+        </g>
+
+        <g font-weight="700">
+          <text x="345" y="263" font-size="11" fill="#16A34A">2Hz</text>
+          <text x="352" y="235" font-size="10" fill="#16A34A" text-anchor="middle">FLASH_2Hz</text>
+          <text x="750" y="142" font-size="11" fill="#2563EB" text-anchor="middle">1Hz</text>
+          <text x="724" y="288" font-size="11" fill="#DC2626" text-anchor="end">EMG</text>
+          <text x="988" y="264" font-size="12" fill="#7C3AED">CLK_GATED</text>
+        </g>
+        <text x="988" y="282" font-size="9.5" fill="#64748b">→ 第 2 节 计数链时钟</text>
+
+        <rect x="60" y="470" width="1000" height="152" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="90" y="498" font-size="13" font-weight="700" fill="#1d1d1f">信号与工作点说明</text>
+        <line x1="90" y1="520" x2="112" y2="520" stroke="#16A34A" stroke-width="3" stroke-linecap="round"></line>
+        <text x="122" y="524" font-size="12" fill="#1d1d1f">FLASH_2Hz　555 OUT（≈2Hz）：黄灯每秒一闪 · 行人绿灯末 10 秒闪烁 · 紧急时数字闪烁（第 4/6 节取用）</text>
+        <line x1="90" y1="548" x2="112" y2="548" stroke="#2563EB" stroke-width="3" stroke-linecap="round"></line>
+        <text x="122" y="552" font-size="12" fill="#1d1d1f">CLK_1Hz　74LS74 1Q（1Hz 秒脉冲，占空比 50%）：经与门后驱动第 2 节全部计数链</text>
+        <line x1="90" y1="576" x2="112" y2="576" stroke="#DC2626" stroke-width="3" stroke-linecap="round"></line>
+        <text x="122" y="580" font-size="12" fill="#1d1d1f">EMG　紧急开关（1kΩ 下拉）：接 +5V 侧 = 1 正常运行；拨向悬空侧 = 0 触发紧急模式</text>
+        <line x1="90" y1="604" x2="112" y2="604" stroke="#7C3AED" stroke-width="3" stroke-linecap="round"></line>
+        <text x="122" y="608" font-size="12" fill="#1d1d1f">CLK_GATED　74LS08 1Y = CLK_1Hz ∧ EMG：正常时输出秒脉冲；紧急时恒 0，第 2 节全部 74LS160 计数冻结</text>
+      </svg>
+    </div>
+    <p style="font-size:12.5px;color:#86868b;margin-top:8px">图为整节接线总览（原理图风格）—— 逐引脚接法以下方表格为准。觉得这个画法可以的话，第 2~6 节我也配同风格电路图；需要调整（线宽 / 字号 / 配色 / 布局）直接说。</p>
+  </div>
+
+  <div class="section">
+    <div class="label">电路一：NE555 多谐振荡器（输出 2Hz 方波）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:110px">引脚名称</th><th style="border-radius:0 6px 0 0">接到哪里（怎么接）</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>VCC</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 +5V 电源（Multisim 中部分 555 符号隐藏电源脚，则默认已供电）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>GND</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接电源地（GND 总线）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>OUT</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>2Hz 方波输出端</b>：接 74LS74 的 1CLK（电路二），同时留一个分支接示波器 / 后续闪烁逻辑（FLASH_2Hz 信号）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>RST</b>（复位）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 +5V（不复位）。<b>切勿悬空</b>，悬空会输出乱码（输出钳在约 0.5V）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>DIS</b>（放电）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接在 R<sub>A</sub> 与 R<sub>B</sub> 之间</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>THR</b>（阈值）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">与 TRI <b>短接</b>，再一起接 R<sub>B</sub> 下端与 C<sub>T</sub> 上端的公共节点</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>TRI</b>（触发）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">与 THR 短接（见上一行）</td></tr>
+      <tr><td style="padding:7px 12px"><b>CON</b>（控制电压）</td><td style="padding:7px 12px">经 0.01µF 瓷片电容接地（稳频用，接了更稳）</td></tr>
+    </tbody></table>
+    <p style="font-size:13px;color:#475569;line-height:1.8;margin-top:8px">
+      <b>三个外接元件（一条线串联下来）：</b><b>+5V → R<sub>A</sub>(6.2kΩ) → DIS → R<sub>B</sub>(33kΩ) → THR/TRI → C<sub>T</sub>(10µF) → GND</b>。节点 A 就是 THR/TRI 那个点。10µF 用电解电容时正极朝节点 A 一侧，用无极性电容则不分方向。<br>
+      <b>电阻电容购买核查 ✓（直插标准件）：</b>R<sub>A</sub>=6.2kΩ、R<sub>B</sub>=33kΩ 均为 E24 系列标准值（1/4W 直插碳膜即可）；C<sub>T</sub>=10µF/16V 直插铝电解；0.01µF 瓷片（标印 103）。<br>
+      <b>频率计算：</b>f ≈ 1/[(R<sub>A</sub>+2R<sub>B</sub>)·C·ln2] = 1/[(6.2k+66k)×10µF×0.693] ≈ <b>2.0Hz</b>，经 74LS74 二分频后正好 1.00Hz。
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="label">电路二：74LS74 二分频（2Hz → 1Hz）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:150px">引脚</th><th style="border-radius:0 6px 0 0">接法</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1CLK</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 555 的 OUT（2Hz 输入）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1D</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接回本芯片 1Q̄ 输出 —— <b>Q̄ 反馈到 D</b>，每个时钟上升沿翻转一次 → 二分频</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1Q̄</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接回 1D（反馈）；本身也是 1Hz（与 Q 反相）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1Q</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1Hz 秒脉冲主输出</b> → 接电路三与门的 1A</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1CLR̄ / 1PR̄</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">都接 +5V（不清零、不置位）。<b>悬空会随机复位，必须接死电平</b></td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>2CLK / 2D / 2Q / 2Q̄</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">第二触发器闲置：2CLR̄、2PR̄ 接 +5V，2D 接 GND，其余悬空不影响</td></tr>
+      <tr><td style="padding:7px 12px"><b>VCC / GND</b></td><td style="padding:7px 12px">+5V / GND</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">电路三：74LS08 与门（紧急模式时钟门控）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:150px">引脚</th><th style="border-radius:0 6px 0 0">接法</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1A</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 74LS74 的 1Q（1Hz 秒脉冲）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1B</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接紧急开关信号 EMG：开关一端接 +5V，输出端经 1kΩ 下拉电阻接 GND（平时 EMG=1 正常；拨紧急侧 EMG=0 触发紧急模式）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>1Y</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>门控后 CLK</b> → 接第 2 节两轴 74LS160 计数链的公共时钟。紧急时恒 0，所有计数器冻结</td></tr>
+      <tr><td style="padding:7px 12px"><b>VCC / GND</b></td><td style="padding:7px 12px">+5V / GND；其余 3 个门悬空不用（TTL 输入悬空视为高，不影响）</td></tr>
+    </tbody></table>
+    <div class="note-red">
+      <b>为什么用与门不用或门：</b>74LS160 在时钟上升沿计数。与门在 EMG 恢复为 1 的瞬间，输出从 0 恢复跟随 1Hz，恢复沿天然与 1Hz 上升沿对齐，不会产生窄毛刺让计数器多计一下。EMG 信号并联 3 路用途：① 本门控；② 第 4 节灯逻辑强制全红；③ 第 6 节 74LS48 的 BI 闪烁控制 —— 都从这一个开关引出
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">本节输出信号清单（下一节的输入）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0">信号名</th><th>来源</th><th style="border-radius:0 6px 0 0">用途</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>CLK_1Hz</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">74LS74 的 1Q</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">经门控后驱动所有计数链</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>FLASH_2Hz</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">555 的 OUT</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">黄灯每秒闪烁、行人绿灯末 10s 闪烁、紧急数字闪烁</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>EMG</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">紧急开关（+1kΩ 下拉）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">紧急模式总控制（平时 1，紧急 0）</td></tr>
+      <tr><td style="padding:7px 12px"><b>CLK_GATED</b></td><td style="padding:7px 12px">74LS08 的 1Y</td><td style="padding:7px 12px">计数链公共时钟</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="note-blue">
+      <b>本节元件（直插可购 ✓）：</b>NE555 ×1、74LS74 ×1、74LS08 ×1、电阻 6.2kΩ / 33kΩ / 1kΩ(下拉) ×各1（E24 标准值）、电容 10µF/16V 电解 ×1 + 0.01µF 瓷片(103) ×1、单刀双掷开关 ×1、+5V 电源 · <b>预计搭建+验证 45 分钟</b>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 第 2 节 ================= -->
+<section id="s2" class="screen show">
+  <div class="sec-banner"><b>第 2/6 节：计时电路</b><span>预计 ~2 小时 · 当前节</span></div>
+  <h2>计时电路 —— 引脚级接线说明</h2>
+  <p class="subtitle">三部分：① 双轴 74LS160 计数链 ② 双方案装载网络（74LS157）③ 9 的补码倒计时（74LS283）</p>
+
+  <div class="section">
+    <div class="label">图 2A · 装载网络（南北轴，东西轴对称，引脚级）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1250 900" style="width:100%;min-width:980px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="625" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">图 2A · 装载网络（南北轴 3 片 74LS157）</text>
+        <text x="625" y="48" text-anchor="middle" font-size="11.5" fill="#64748b">个位 2 选 1（绿 / 黄休同值）＋ 十位两级 3 选 1（绿 / 黄9 / 休7）· SW 开关直连方案位</text>
+
+        <!-- PH_NS / T0 输入 -->
+        <g font-size="10.5" font-weight="700">
+          <text x="150" y="128" fill="#2563EB">PH_NS（=T0∨T1）</text>
+          <text x="56" y="560" fill="#2563EB">T0</text>
+        </g>
+        <line x1="200" y1="136" x2="420" y2="136" stroke="#2563EB" stroke-width="2.5"></line>
+        <line x1="200" y1="136" x2="200" y2="480" stroke="#2563EB" stroke-width="2.5"></line>
+        <line x1="200" y1="480" x2="740" y2="480" stroke="#2563EB" stroke-width="2.5"></line>
+        <line x1="740" y1="480" x2="740" y2="570" stroke="#2563EB" stroke-width="2.5"></line>
+        <line x1="740" y1="570" x2="770" y2="570" stroke="#2563EB" stroke-width="2.5"></line>
+        <line x1="200" y1="560" x2="200" y2="570" stroke="#2563EB" stroke-width="2.5"></line>
+        <line x1="200" y1="570" x2="420" y2="570" stroke="#2563EB" stroke-width="2.5"></line>
+        <g fill="#2563EB"><circle cx="200" cy="136" r="3.5"></circle></g>
+        <text x="230" y="112" font-size="9" fill="#64748b">S1（选绿/其它）</text>
+        <text x="300" y="494" font-size="9" fill="#64748b">S1 → U22'（十位第二级）</text>
+        <text x="300" y="550" font-size="9" fill="#64748b">S2（T0 期间=1 → 选黄；T1 期间=0 → 选休）</text>
+
+        <!-- SW 开关 -->
+        <g stroke="#1d1d1f" stroke-width="2" fill="none">
+          <line x1="80" y1="120" x2="112" y2="100"></line>
+          <circle cx="80" cy="120" r="4" fill="#1d1d1f"></circle>
+          <line x1="112" y1="92" x2="112" y2="100"></line>
+          <line x1="112" y1="112" x2="112" y2="104"></line>
+        </g>
+        <path d="M112,84 L107,95 L117,95 Z" fill="#DC2626"></path>
+        <text x="112" y="80" font-size="10" font-weight="700" fill="#DC2626" text-anchor="middle">+5V</text>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="104" y1="118" x2="120" y2="118"></line><line x1="107" y1="122" x2="117" y2="122"></line><line x1="110" y1="126" x2="114" y2="126"></line></g>
+        <text x="52" y="140" font-size="10.5" font-weight="700" fill="#7C3AED">SW</text>
+        <text x="52" y="156" font-size="8.5" fill="#64748b">方案</text>
+        <line x1="84" y1="120" x2="84" y2="260" stroke="#7C3AED" stroke-width="2.5"></line>
+        <line x1="84" y1="260" x2="420" y2="260" stroke="#7C3AED" stroke-width="2.5" fill="none"></line>
+        <path d="M420,260 L420,350" fill="none" stroke="#7C3AED" stroke-width="2.5"></path>
+        <line x1="84" y1="260" x2="84" y2="878" stroke="#7C3AED" stroke-width="2.5"></line>
+        <line x1="84" y1="878" x2="920" y2="878" stroke="#7C3AED" stroke-width="2.5"></line>
+        <line x1="920" y1="878" x2="920" y2="850" stroke="#7C3AED" stroke-width="2.5"></line>
+        <g fill="#7C3AED"><circle cx="84" cy="260" r="3.5"></circle></g>
+        <text x="520" y="437" font-size="9" fill="#7C3AED" text-anchor="middle">SW → U21 的 3B（黄/休个位：0→6，1→4）</text>
+        <text x="500" y="872" font-size="9" fill="#7C3AED" text-anchor="middle">SW → U22' 的 1A（绿十位：0→6，1→7）</text>
+
+        <!-- U21 个位 -->
+        <rect x="420" y="90" width="200" height="300" rx="8" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></rect>
+        <text x="520" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS157 · U21</text>
+        <text x="520" y="131" text-anchor="middle" font-size="9.5" fill="#64748b">南北 · 个位（2 选 1）</text>
+        <g font-size="10" fill="#374151">
+          <text x="428" y="150">S</text><text x="428" y="172">Ḡ</text>
+          <text x="428" y="206">1A</text><text x="428" y="228">2A</text><text x="428" y="250">3A</text><text x="428" y="272">4A</text>
+          <text x="428" y="306">1B</text><text x="428" y="328">2B</text><text x="428" y="350">3B</text><text x="428" y="372">4B</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="612" y="221">1Y</text><text x="612" y="243">2Y</text><text x="612" y="265">3Y</text><text x="612" y="287">4Y</text>
+        </g>
+        <!-- A 组固定电平（绿个位=9=1001） -->
+        <g font-size="9.5" font-weight="700">
+          <text x="398" y="206" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="228" fill="#86868b" text-anchor="end">0</text>
+          <text x="398" y="250" fill="#86868b" text-anchor="end">0</text>
+          <text x="398" y="272" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="306" fill="#86868b" text-anchor="end">0</text>
+          <text x="398" y="328" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="384" fill="#86868b" text-anchor="end">0</text>
+        </g>
+        <text x="330" y="188" font-size="9" fill="#64748b">绿个位 9（固定）</text>
+        <text x="330" y="322" font-size="9" fill="#64748b">黄/休个位</text>
+        <line x1="620" y1="217" x2="700" y2="217" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="620" y1="239" x2="700" y2="239" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="620" y1="261" x2="700" y2="261" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="620" y1="283" x2="700" y2="283" stroke="#16A34A" stroke-width="2"></line>
+        <text x="708" y="228" font-size="10" font-weight="700" fill="#166534">→ U11 A B C D</text>
+        <text x="708" y="250" font-size="9" fill="#64748b">（个位装载值）</text>
+        <line x1="420" y1="168" x2="400" y2="168" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="386" y1="166" x2="402" y2="166"></line><line x1="390" y1="171" x2="398" y2="171"></line><line x1="393" y1="176" x2="395" y2="176"></line></g>
+
+        <!-- U22 十位第一级 -->
+        <rect x="420" y="510" width="200" height="300" rx="8" fill="#FFF7E6" stroke="#B45309" stroke-width="2"></rect>
+        <text x="520" y="535" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS157 · U22</text>
+        <text x="520" y="551" text-anchor="middle" font-size="9.5" fill="#64748b">南北 · 十位第一级（黄/休）</text>
+        <g font-size="10" fill="#374151">
+          <text x="428" y="570">S</text><text x="428" y="592">Ḡ</text>
+          <text x="428" y="626">1A</text><text x="428" y="648">2A</text><text x="428" y="670">3A</text><text x="428" y="692">4A</text>
+          <text x="428" y="726">1B</text><text x="428" y="748">2B</text><text x="428" y="770">3B</text><text x="428" y="792">4B</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="612" y="641">1Y</text><text x="612" y="663">2Y</text><text x="612" y="685">3Y</text><text x="612" y="707">4Y</text>
+        </g>
+        <g font-size="9.5" font-weight="700">
+          <text x="398" y="626" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="648" fill="#86868b" text-anchor="end">0</text>
+          <text x="398" y="670" fill="#86868b" text-anchor="end">0</text>
+          <text x="398" y="692" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="726" fill="#86868b" text-anchor="end">0</text>
+          <text x="398" y="748" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="770" fill="#DC2626" text-anchor="end">1</text>
+          <text x="398" y="792" fill="#86868b" text-anchor="end">0</text>
+        </g>
+        <text x="316" y="608" font-size="9" fill="#64748b">黄十位 9（固定）</text>
+        <text x="316" y="748" font-size="9" fill="#64748b">休十位 7（固定）</text>
+        <line x1="420" y1="588" x2="400" y2="588" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="386" y1="586" x2="402" y2="586"></line><line x1="390" y1="591" x2="398" y2="591"></line><line x1="393" y1="596" x2="395" y2="596"></line></g>
+        <!-- U22 Y → U22' B -->
+        <line x1="620" y1="637" x2="660" y2="637" stroke="#B45309" stroke-width="2"></line>
+        <line x1="660" y1="637" x2="660" y2="760" stroke="#B45309" stroke-width="2"></line>
+        <line x1="660" y1="760" x2="770" y2="760" stroke="#B45309" stroke-width="2"></line>
+        <line x1="660" y1="659" x2="672" y2="659" stroke="#B45309" stroke-width="2"></line>
+        <line x1="672" y1="659" x2="672" y2="782" stroke="#B45309" stroke-width="2"></line>
+        <line x1="672" y1="782" x2="770" y2="782" stroke="#B45309" stroke-width="2"></line>
+        <line x1="660" y1="681" x2="684" y2="681" stroke="#B45309" stroke-width="2"></line>
+        <line x1="684" y1="681" x2="684" y2="804" stroke="#B45309" stroke-width="2"></line>
+        <line x1="684" y1="804" x2="770" y2="804" stroke="#B45309" stroke-width="2"></line>
+        <line x1="660" y1="703" x2="696" y2="703" stroke="#B45309" stroke-width="2"></line>
+        <line x1="696" y1="703" x2="696" y2="826" stroke="#B45309" stroke-width="2"></line>
+        <line x1="696" y1="826" x2="770" y2="826" stroke="#B45309" stroke-width="2"></line>
+        <text x="700" y="610" font-size="9" fill="#B45309">4 位 → U22' 的 1B~4B</text>
+
+        <!-- U22' 十位第二级 -->
+        <rect x="770" y="510" width="200" height="340" rx="8" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"></rect>
+        <text x="870" y="535" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS157 · U22'</text>
+        <text x="870" y="551" text-anchor="middle" font-size="9.5" fill="#64748b">南北 · 十位第二级（绿/黄休）</text>
+        <g font-size="10" fill="#374151">
+          <text x="778" y="570">S</text><text x="778" y="592">Ḡ</text>
+          <text x="778" y="626">1A</text><text x="778" y="648">2A</text><text x="778" y="670">3A</text><text x="778" y="692">4A</text>
+          <text x="778" y="726">1B</text><text x="778" y="748">2B</text><text x="778" y="770">3B</text><text x="778" y="792">4B</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="962" y="641">1Y</text><text x="962" y="663">2Y</text><text x="962" y="685">3Y</text><text x="962" y="707">4Y</text>
+        </g>
+        <g font-size="9.5" font-weight="700">
+          <text x="756" y="648" fill="#DC2626" text-anchor="end">1</text>
+          <text x="756" y="670" fill="#DC2626" text-anchor="end">1</text>
+          <text x="756" y="692" fill="#86868b" text-anchor="end">0</text>
+        </g>
+        <text x="742" y="596" font-size="9" fill="#64748b" text-anchor="end">绿十位（A 位=SW）</text>
+        <line x1="770" y1="588" x2="750" y2="588" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="736" y1="586" x2="752" y2="586"></line><line x1="740" y1="591" x2="748" y2="591"></line><line x1="743" y1="596" x2="745" y2="596"></line></g>
+        <line x1="970" y1="637" x2="1040" y2="637" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="970" y1="659" x2="1040" y2="659" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="970" y1="681" x2="1040" y2="681" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="970" y1="703" x2="1040" y2="703" stroke="#7C3AED" stroke-width="2"></line>
+        <text x="1048" y="648" font-size="10" font-weight="700" fill="#7C3AED">→ U12 A B C D</text>
+        <text x="1048" y="670" font-size="9" fill="#64748b">（十位装载值）</text>
+
+        <!-- 真值表 -->
+        <rect x="740" y="90" width="480" height="360" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="980" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#1d1d1f">装载值选择真值表（南北轴）</text>
+        <g font-size="9.5" fill="#374151">
+          <text x="756" y="146" font-weight="700">相位期间（装载沿在相位结束时）</text>
+          <text x="756" y="168">T3→T0 装绿：S1=0,S2=0 → U21 选A（绿个位9）、U22' 选A（绿十位SW）</text>
+          <text x="756" y="190">T0→T1 装黄：S1=1,S2=1 → U21 选B（黄个位6）、U22 选A（黄十位9）</text>
+          <text x="756" y="212">　→ 二级：U22' 选B 直通 U22 输出（黄十位9）→ U12 十位装载</text>
+          <text x="756" y="234">T1→T2 装休：S1=1,S2=0 → U21 选B（休个位6）、U22 选B（休十位7）</text>
+          <text x="756" y="256">　→ 二级：U22' 选B 直通 U22 输出（休十位7）→ U12 十位装载</text>
+          <text x="756" y="278">T2/T3 南北休眠计数（76→99 走 23s），不再装载</text>
+          <text x="756" y="306" font-weight="700">SW 方案位（直连，无芯片）</text>
+          <text x="756" y="328">SW=0 方案二：绿 69（30s）· 黄 96（3s）· 休 76（显 23）</text>
+          <text x="756" y="350">SW=1 方案一：绿 79（20s）· 黄 94（5s）· 休 74（显 25）</text>
+          <text x="756" y="378" font-weight="700">东西轴对称（U23 个位 / U24+U24' 十位）</text>
+          <text x="756" y="400">S1'=PH_EW、S2'=T2；绿 79 固定、黄 96/94、休 66/74；共 6 片 157</text>
+          <text x="756" y="422" font-size="8.5" fill="#64748b">※ SW 脚注：（0,1,SW,0）中 SW 经非门取反后充当个位第 2 位（权重 2）：SW=0→黄/休个位 6、SW=1→4</text>
+          <text x="756" y="438" font-size="8.5" fill="#64748b">　十位固定：黄 9（1001）、休 7（0111），不随 SW</text>
+        </g></svg>
+        
+      
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">图 2B · 计数链与补码转换（南北轴，引脚级）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1250 900" style="width:100%;min-width:980px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="625" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">图 2B · 计数链（U11/U12）＋ 9 的补码（非门＋U31/U32）</text>
+        <text x="625" y="48" text-anchor="middle" font-size="11.5" fill="#64748b">装载值 → 69→99 递增计数 → 逐位取反 → ＋1010 → 倒计时显示总线</text>
+
+        <!-- CLK_GATED -->
+        <text x="40" y="140" font-size="10.5" font-weight="700" fill="#7C3AED">CLK_GATED</text>
+        <line x1="60" y1="146" x2="60" y2="520" stroke="#7C3AED" stroke-width="2.5"></line>
+        <line x1="60" y1="150" x2="190" y2="150" stroke="#7C3AED" stroke-width="2.5"></line>
+        <line x1="60" y1="520" x2="190" y2="520" stroke="#7C3AED" stroke-width="2.5"></line>
+        <g fill="#7C3AED"><circle cx="60" cy="150" r="3.5"></circle><circle cx="60" cy="520" r="3.5"></circle></g>
+        <text x="70" y="335" font-size="9" fill="#64748b" transform="rotate(-90 70 335)">公共时钟（1Hz 门控）</text>
+
+        <!-- LOAD_NS 绕线 -->
+        <text x="126" y="204" font-size="10.5" font-weight="700" fill="#DC2626">LOAD_NS</text>
+        <line x1="120" y1="202" x2="120" y2="580" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="120" y1="202" x2="190" y2="202" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="120" y1="580" x2="190" y2="580" stroke="#DC2626" stroke-width="2.5"></line>
+        <g fill="#DC2626"><circle cx="120" cy="202" r="3.5"></circle><circle cx="120" cy="580" r="3.5"></circle></g>
+        <line x1="1000" y1="700" x2="1060" y2="700" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="1060" y1="700" x2="1060" y2="840" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="1060" y1="840" x2="120" y2="840" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="120" y1="840" x2="120" y2="758" stroke="#DC2626" stroke-width="2.5"></line>
+        <text x="590" y="834" font-size="9.5" fill="#DC2626">LOAD_NS ＝ U12 十位 RCO（计满 99 产生，下一沿同步装载两片）</text>
+
+        <!-- U11 -->
+        <rect x="190" y="100" width="180" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+        <text x="280" y="124" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS160 · U11</text>
+        <text x="280" y="140" text-anchor="middle" font-size="9.5" fill="#64748b">南北 · 个位</text>
+        <g font-size="10" fill="#374151">
+          <text x="198" y="158">CLK</text><text x="198" y="186">CLR̄</text><text x="198" y="214">LOAD̄</text>
+          <text x="198" y="242">ENP</text><text x="198" y="270">ENT</text>
+          <text x="198" y="298">A</text><text x="198" y="326">B</text><text x="198" y="354">C</text><text x="198" y="382">D</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="362" y="166">QA</text><text x="362" y="194">QB</text><text x="362" y="222">QC</text><text x="362" y="250">QD</text>
+          <text x="362" y="310">RCO</text>
+        </g>
+        <line x1="190" y1="186" x2="170" y2="186" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M170,175 L165,186 L175,186 Z" fill="#DC2626"></path>
+        <text x="170" y="170" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="middle">+5V</text>
+        <line x1="190" y1="242" x2="170" y2="242" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="190" y1="270" x2="170" y2="270" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="170" y1="242" x2="170" y2="270" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="170" y1="256" x2="150" y2="256" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M150,245 L145,256 L155,256 Z" fill="#DC2626"></path>
+        <text x="150" y="240" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="middle">+5V</text>
+        <text x="198" y="418" font-size="9" fill="#64748b">A~D ← U21 的 1Y~4Y</text>
+        <line x1="190" y1="298" x2="180" y2="298" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="190" y1="326" x2="180" y2="326" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="190" y1="354" x2="180" y2="354" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="190" y1="382" x2="180" y2="382" stroke="#16A34A" stroke-width="2"></line>
+
+        <!-- U11 非门组 -->
+        <g>
+          <path d="M370,158 L410,166 L370,174 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="166" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M370,186 L410,194 L370,202 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="194" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M370,214 L410,222 L370,230 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="222" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M370,242 L410,250 L370,258 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="250" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        </g>
+        <text x="392" y="148" font-size="8.5" fill="#64748b" text-anchor="middle">74LS04 非门 ×4</text>
+
+        <!-- U31 -->
+        <rect x="500" y="100" width="190" height="330" rx="8" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"></rect>
+        <text x="595" y="124" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS283 · U31</text>
+        <text x="595" y="140" text-anchor="middle" font-size="9.5" fill="#64748b">个位补码（＋1010）</text>
+        <g font-size="10" fill="#374151">
+          <text x="508" y="158">A1</text><text x="508" y="186">A2</text><text x="508" y="214">A3</text><text x="508" y="242">A4</text>
+          <text x="508" y="270">B1</text><text x="508" y="298">B2</text><text x="508" y="326">B3</text><text x="508" y="354">B4</text>
+          <text x="508" y="382">C0</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="682" y="166">S1</text><text x="682" y="194">S2</text><text x="682" y="222">S3</text><text x="682" y="250">S4</text>
+          <text x="682" y="310">C4</text>
+        </g>
+        <!-- B 固定 1010 -->
+        <line x1="500" y1="270" x2="480" y2="270" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M480,259 L475,270 L485,270 Z" fill="#DC2626"></path>
+        <text x="472" y="258" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="end">+5V</text>
+        <line x1="500" y1="298" x2="480" y2="298" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="466" y1="296" x2="482" y2="296"></line><line x1="470" y1="301" x2="478" y2="301"></line><line x1="473" y1="306" x2="475" y2="306"></line></g>
+        <line x1="500" y1="326" x2="480" y2="326" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M480,315 L475,326 L485,326 Z" fill="#DC2626"></path>
+        <text x="472" y="322" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="end">+5V</text>
+        <line x1="500" y1="354" x2="480" y2="354" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="466" y1="352" x2="482" y2="352"></line><line x1="470" y1="357" x2="478" y2="357"></line><line x1="473" y1="362" x2="475" y2="362"></line></g>
+        <line x1="500" y1="382" x2="480" y2="382" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1f" stroke-width="2"><line x1="466" y1="380" x2="482" y2="380"></line><line x1="470" y1="385" x2="478" y2="385"></line><line x1="473" y1="390" x2="473" y2="390"></line></g>
+        <text x="440" y="316" font-size="9" fill="#64748b" text-anchor="end">B＝1010</text>
+        <!-- 非门 → A -->
+        <line x1="417" y1="166" x2="500" y2="158" stroke="#B45309" stroke-width="2"></line>
+        <line x1="417" y1="194" x2="500" y2="186" stroke="#B45309" stroke-width="2"></line>
+        <line x1="417" y1="222" x2="500" y2="214" stroke="#B45309" stroke-width="2"></line>
+        <line x1="417" y1="250" x2="500" y2="242" stroke="#B45309" stroke-width="2"></line>
+        <!-- S 输出 -->
+        <line x1="690" y1="162" x2="760" y2="162" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="690" y1="190" x2="760" y2="190" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="690" y1="218" x2="760" y2="218" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="690" y1="246" x2="760" y2="246" stroke="#7C3AED" stroke-width="2"></line>
+        <text x="768" y="200" font-size="10.5" font-weight="700" fill="#7C3AED">NS_BCD_UNI</text>
+        <text x="768" y="222" font-size="9" fill="#64748b">→ 第 5 节 74LS48（个位）</text>
+        <text x="768" y="240" font-size="9" fill="#64748b">9−N 补码输出</text>
+
+        <!-- U12 -->
+        <rect x="190" y="470" width="180" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+        <text x="280" y="494" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS160 · U12</text>
+        <text x="280" y="510" text-anchor="middle" font-size="9.5" fill="#64748b">南北 · 十位</text>
+        <g font-size="10" fill="#374151">
+          <text x="198" y="528">CLK</text><text x="198" y="556">CLR̄</text><text x="198" y="584">LOAD̄</text>
+          <text x="198" y="612">ENP</text><text x="198" y="640">ENT</text>
+          <text x="198" y="668">A</text><text x="198" y="696">B</text><text x="198" y="724">C</text><text x="198" y="752">D</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="362" y="536">QA</text><text x="362" y="564">QB</text><text x="362" y="592">QC</text><text x="362" y="620">QD</text>
+          <text x="362" y="680">RCO</text>
+        </g>
+        <line x1="190" y1="556" x2="170" y2="556" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M170,545 L165,556 L175,556 Z" fill="#DC2626"></path>
+        <text x="170" y="540" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="middle">+5V</text>
+        <!-- U11 RCO → U12 ENP/ENT -->
+        <line x1="370" y1="310" x2="400" y2="310" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="400" y1="310" x2="400" y2="440" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="400" y1="440" x2="140" y2="440" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="140" y1="440" x2="140" y2="612" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="140" y1="612" x2="190" y2="612" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="140" y1="612" x2="140" y2="640" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="140" y1="640" x2="190" y2="640" stroke="#1d1d1f" stroke-width="2"></line>
+        <g fill="#1d1d1f"><circle cx="140" cy="612" r="3"></circle></g>
+        <text x="270" y="455" font-size="9" fill="#64748b">U11 RCO → U12 ENP/ENT（串行进位：个位计到 9 十位才 +1）</text>
+        <!-- U12 RCO = LOAD_NS -->
+        <line x1="370" y1="680" x2="1000" y2="680" stroke="#DC2626" stroke-width="2.5"></line>
+        <text x="198" y="788" font-size="9" fill="#64748b">A~D ← U22' 的 1Y~4Y</text>
+
+        <!-- U12 非门组 + U32 -->
+        <g>
+          <path d="M370,528 L410,536 L370,544 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="536" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M370,556 L410,564 L370,572 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="564" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M370,584 L410,592 L370,600 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="592" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M370,612 L410,620 L370,628 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="413" cy="620" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        </g>
+
+        <rect x="500" y="470" width="190" height="330" rx="8" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"></rect>
+        <text x="595" y="494" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS283 · U32</text>
+        <text x="595" y="510" text-anchor="middle" font-size="9.5" fill="#64748b">十位补码（＋1010）</text>
+        <g font-size="10" fill="#374151">
+          <text x="508" y="528">A1</text><text x="508" y="556">A2</text><text x="508" y="584">A3</text><text x="508" y="612">A4</text>
+          <text x="508" y="640">B1</text><text x="508" y="668">B2</text><text x="508" y="696">B3</text><text x="508" y="724">B4</text>
+          <text x="508" y="752">C0</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="682" y="536">S1</text><text x="682" y="564">S2</text><text x="682" y="592">S3</text><text x="682" y="620">S4</text>
+          <text x="682" y="672">C4</text>
+        </g>
+        <line x1="417" y1="536" x2="500" y2="528" stroke="#B45309" stroke-width="2"></line>
+        <line x1="417" y1="564" x2="500" y2="556" stroke="#B45309" stroke-width="2"></line>
+        <line x1="417" y1="592" x2="500" y2="584" stroke="#B45309" stroke-width="2"></line>
+        <line x1="417" y1="620" x2="500" y2="612" stroke="#B45309" stroke-width="2"></line>
+        <line x1="690" y1="532" x2="760" y2="532" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="690" y1="560" x2="760" y2="560" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="690" y1="588" x2="760" y2="588" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="690" y1="616" x2="760" y2="616" stroke="#7C3AED" stroke-width="2"></line>
+        <text x="768" y="570" font-size="10.5" font-weight="700" fill="#7C3AED">NS_BCD_TEN</text>
+        <text x="768" y="592" font-size="9" fill="#64748b">→ 第 5 节 74LS48（十位）</text>
+        <text x="500" y="878" font-size="10.5" fill="#64748b" text-anchor="middle">验证：计数值 0110(6) → 非门 1001 → ＋1010 → 0011(3)，屏显 9−6=3 ✓ · 东西轴（U13/U14＋非门＋U33/U34）完全对称复制本图</text>
+      </svg>
+    </div>
+    <p style="font-size:12.5px;color:#86868b;margin-top:8px">信号流：装载值（图 2A）→ 160 计数链（69→99 递增，计满 RCO 触发重装载）→ 04 非门逐位取反 → 283 加固定 1010 得 9 的补码 → 显示总线。逐引脚接法见下方表格。</p>
+  </div>
+
+  <div class="section">
+    <div class="label">本节原理（先读懂再动手）</div>
+    <div class="note-gray">
+      <b>倒计时原理：</b>74LS160 只会往上加。我们让它从 <b>99−时长</b> 开始数，数到 <b>99</b> 本相位结束。显示时用 74LS283 把计数值换成 <b>9−各位数字</b>（9 的补码），屏上看到的就是 时长→0 的倒计时。<br>
+      <b>双轴交替：</b>南北轴、东西轴轮流"值班"。值班轴计到 99 时触发换相：①自己装载下一个时长 ②把"值班权"交给对方轴。相序是固定的 4 步循环：<b>T0 南北绿 30s → T1 南北黄 3s → T2 东西绿 20s → T3 东西黄 3s</b>（方案二默认值；方案一 20/5/20/5 由切换开关选择）。<br>
+      <b>举例（T0 相位，南北绿 30s）：</b>南北轴从 69 数到 99 → 显示 99-69=30 → 30→0；东西轴此时显示红灯剩余 33（对方绿20+黄3），由休眠装载实现。<br>
+      <b>关键设计：</b>休眠轴不是停数，而是装载"红灯总时长"后<b>继续计数</b>（ENP/ENT 恒 1），两轴永远在数、显示永远正确，99 检测门仅对值班轴使能——逻辑最简。
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">电路四：南北轴计数链（74LS160 ×2，个位 + 十位）</div>
+    <p style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:6px">U11=个位（UNITS）、U12=十位（TENS）。东西轴 U13/U14 完全对称复制</p>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:170px">引脚</th><th style="border-radius:0 6px 0 0">接法（U11 个位）</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>CLK</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接第 1 节的 CLK_GATED（门控秒脉冲）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>CLR̄</b> 清零</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 +5V（本设计用同步装载 LOAD̄，不用异步清零）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>LOAD̄</b> 装载</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接本轴<b>装载脉冲 LOAD_NS</b>（= 十位片 RCO，见电路六）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>ENP、ENT</b> 使能</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">两脚并联接 +5V（两轴恒计数，见"关键设计"）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>A B C D</b> 数据输入</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接装载网络输出 <b>NS_UNI[3:0]</b>（74LS157 选出的方案值，见电路五）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>QA QB QC QD</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">输出 <b>NS_CNT_UNI[3:0]</b> → ① 接补码电路 74LS283（经非门取反）② 接 99 检测门</td></tr>
+      <tr><td style="padding:7px 12px"><b>RCO</b> 进位</td><td style="padding:7px 12px">接 U12（十位）的 ENP、ENT（个位计到 9 时十位才 +1）</td></tr>
+    </tbody></table>
+    <p style="font-size:13px;color:#475569;line-height:1.7;margin-top:6px"><b>U12（十位）接法差异：</b>CLK 同接 CLK_GATED；CLR̄ 接 +5V；ENP/ENT 接 U11 的 RCO（串行进位）；LOAD̄ 与 U11 并联；A B C D 接 <b>NS_TEN[3:0]</b>；QA~QD = NS_CNT_TEN[3:0] → 补码电路 + 99 检测。<b>RCO = LOAD_NS</b>（本轴装载脉冲）。东西轴 U13/U14 对称复制，十位 RCO = LOAD_EW。</p>
+  </div>
+
+  <div class="section">
+    <div class="label">两轴装载值总表（直接照抄接线，方案二默认）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0">相位</th><th>值班轴装载<br>（十位+个位 BCD）</th><th>屏显倒计时</th><th>休眠轴装载</th><th style="border-radius:0 6px 0 0">休眠屏显</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>T0 南北绿 30s</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">69：6(0110)+9(1001)</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">30→00</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">66（东西）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">33→04</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>T1 南北黄 3s</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">96：9(1001)+6(0110)</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">03→00</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">66 保持</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">33（冻结）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>T2 东西绿 20s</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">79：7(0111)+9(1001)</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">20→00</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">76（南北）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">23→04</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>T3 东西黄 3s</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">96：9(1001)+6(0110)</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">03→00</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">76 保持</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7;text-align:center">23（冻结）</td></tr>
+      <tr><td style="padding:7px 12px"><b>方案一切换后</b></td><td style="padding:7px 12px;text-align:center">绿20：79、黄5：94</td><td style="padding:7px 12px;text-align:center">20/05→00</td><td style="padding:7px 12px;text-align:center">74（休眠红 25）</td><td style="padding:7px 12px;text-align:center">25→05</td></tr>
+    </tbody></table>
+    <p style="font-size:12.5px;color:#64748b;margin-top:6px">装载值 = 99−显示初值：十位装 9−显示十位、个位装 9−显示个位（9 的补码关系）。如 30 → 装十位 6、个位 9 → 69 ✓（数到 99 恰好 30 秒）</p>
+  </div>
+
+  <div class="section">
+    <div class="label">电路五：装载网络（74LS157 ×6，两级选择 + SW 直连方案位）</div>
+    <p style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:6px">按图 2A 接线。选择信号：<b>S1=PH（T0∨T1 / T2∨T3，选绿或其它）、S2=T0（南北）/ T2（东西，选黄或休）</b>——装载沿发生在相位结束时，此时 S1/S2 仍为当前相位值，恰好选中下一相位的装载值。方案切换不用芯片：<b>SW 直连 4 个位</b>（南北绿十位 A、南北黄/休个位 C、东西休十位 A、东西黄/休个位 C）</p>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:170px">芯片</th><th style="border-radius:0 6px 0 0">分工与 S 端</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>U21</b> 南北个位</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">S1=PH_NS：A 组=绿个位 9（固定 1001）、B 组=黄/休个位（0,1,SW,0）→ 1Y~4Y 接 U11 的 A~D</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>U22</b> 南北十位一级</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">S2=T0：A 组=黄十位 9（固定 1001）、B 组=休十位 7（固定 0111）→ 4 位输出接 U22' 的 B 组</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>U22'</b> 南北十位二级</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">S1=PH_NS：A 组=绿十位（SW,1,1,0）、B 组=U22 输出 → 1Y~4Y 接 U12 的 A~D</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>U23/U24/U24'</b> 东西轴</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">对称：S1'=PH_EW、S2'=T2；绿 79 全固定、休十位（SW,1,1,0）、黄/休个位（0,1,SW,0）</td></tr>
+      <tr><td style="padding:7px 12px"><b>公共</b></td><td style="padding:7px 12px">全部 Ḡ 接 GND（常通）；VCC/GND 接 +5V/GND</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">电路六：99 检测与装载/换相脉冲</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:170px">信号</th><th style="border-radius:0 6px 0 0">接法</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>LOAD_NS</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">U12（南北十位 160）的 RCO。RCO 在 99 状态仅维持 1 个 CLK，160 的 LOAD̄ 是<b>同步</b>装载——RCO 为 1 后下一个 CLK 上升沿正好装载，时序天然匹配，无需单稳态</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>LOAD_EW</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">U14（东西十位 160）的 RCO，同理</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>ROLE</b>（换相脉冲）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">LOAD_NS ∨ LOAD_EW（74LS32 或门）→ 接第 3 节主控状态机时钟</td></tr>
+      <tr><td style="padding:7px 12px"><b>上电初始化</b></td><td style="padding:7px 12px">上电瞬间两轴数值随机 → 加上电复位：VCC 经 10µF 电容接 LOAD̄、1kΩ 下拉到 GND（微分窄脉冲强制装载）—— <b>电阻电容核查：10µF 电解 + 1kΩ 均为直插可购标准件 ✓</b></td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">电路七：9 的补码显示转换（74LS283 ×4 + 74LS04 ×2）</div>
+    <p style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:6px">原理：<b>9−N = N 逐位取反 + 1010</b>（N≤9 时成立）。A 输入=计数位取反（非门），B 输入=固定 1010，输出即倒计时数字</p>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:170px">引脚</th><th style="border-radius:0 6px 0 0">接法（以南北个位 U31 为例）</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>A1~A4</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 74LS04 非门输出（非门输入接 U11 的 QA QB QC QD）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>B1~B4</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">B1=+5V、B2=GND、B3=+5V、B4=GND（固定 1010）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>C0</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">GND</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>S1~S4</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">= 9−N → 接第 5 节 74LS48 输入（南北轴显示总线 NS_BCD_UNI）</td></tr>
+      <tr><td style="padding:7px 12px"><b>C4</b></td><td style="padding:7px 12px">悬空不用</td></tr>
+    </tbody></table>
+    <p style="font-size:13px;color:#475569;line-height:1.8;margin-top:6px"><b>四片分工：</b>U31 南北个位、U32 南北十位、U33 东西个位、U34 东西十位（各配 4 个非门，74LS04 每片 6 门共 2 片）。<b>验证：</b>计数值 0110(6) → 取反 1001(9) → +1010 → 0011(3) ✓ 显示"3"</p>
+  </div>
+
+  <div class="section">
+    <div class="label">本节输出信号清单（下一节输入）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0">信号名</th><th>来源</th><th style="border-radius:0 6px 0 0">去向</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>ROLE</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">两轴 RCO 或门</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">主控状态机时钟（第 3 节）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>NS_BCD_UNI/TEN</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">U31/U32 的 S</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">南北轴 74LS48（第 5 节）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>EW_BCD_UNI/TEN</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">U33/U34 的 S</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">东西轴 74LS48（第 5 节）</td></tr>
+      <tr><td style="padding:7px 12px"><b>LOAD_NS / LOAD_EW</b></td><td style="padding:7px 12px">两轴十位 RCO</td><td style="padding:7px 12px">本轴 160 的 LOAD̄（自用）</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">本节 Multisim 分步验证方法</div>
+    <ul>
+      <li><b>步骤 1 验证补码：</b>U31 输入用拨码开关给固定值 0110，S 输出接逻辑探针应亮 0011</li>
+      <li><b>步骤 2 验证装载：</b>PH_NS 接 GND（绿），按 SPACE 触发 LOAD̄=0 → 探针读数应变为装载值 69 的 BCD</li>
+      <li><b>步骤 3 验证计数：</b>接上 CLK_GATED，每秒 −1：30→29→…→00→自动重装</li>
+      <li><b>常见故障：</b>①一直不计数 → 查 ENP/ENT 是否接 +5V、CLR̄ 是否接 +5V ②显示乱跳 → 查 157 的 Ḡ 是否接 GND ③到 00 不重装 → 查十位 RCO 到 LOAD̄ 的连线</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="note-blue"><b>本节元件（电阻电容核查 ✓）：</b>74LS160 ×4、74LS157 ×6（每轴 3 片：个位 2 选 1 + 十位两级 3 选 1，方案切换由 SW 直连 4 个位、无需芯片）、74LS283 ×4、74LS04 ×2、74LS32 ×1、单刀双掷开关 ×2（SW 方案 + 调试）、上电复位用 <b>10µF 电解电容 ×1 + 1kΩ 电阻 ×1（直插可购标准值 ✓）</b> · <b>预计搭建+验证 ~2 小时</b></div>
+  </div>
+</section>
+
+<!-- ================= 第 3 节 ================= -->
+<section id="s3" class="screen">
+  <div class="sec-banner"><b>第 3/6 节：主控电路</b><span>预计 ~1 小时 15 分</span></div>
+  <h2>主控电路 —— 模 4 相位状态机</h2>
+  <p class="subtitle">74LS160（模 4 接法）+ 74LS139 译码 → T0~T3 · 产生 PH_NS / PH_EW 相位指示与灯逻辑输入</p>
+
+  <div class="section">
+    <div class="label">电路图（SVG，引脚级）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1300 830" style="width:100%;min-width:1000px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="650" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">第 3 节 · 主控电路（引脚级连接图）</text>
+        <text x="650" y="48" text-anchor="middle" font-size="11.5" fill="#64748b">ROLE'与门 → U41（74LS160 模 4）→ U42（74LS139 译码）→ 非门 → T0~T3 · 或门合成 PH/YEL · Y3 反馈保模 4</text>
+
+        <!-- ROLE / EMG 输入 -->
+        <text x="42" y="146" font-size="10.5" font-weight="700" fill="#7C3AED">ROLE</text>
+        <text x="42" y="160" font-size="8.5" fill="#64748b">第 2 节</text>
+        <text x="42" y="196" font-size="10.5" font-weight="700" fill="#DC2626">EMG</text>
+        <text x="42" y="210" font-size="8.5" fill="#64748b">第 1 节</text>
+        <line x1="80" y1="142" x2="130" y2="142" stroke="#7C3AED" stroke-width="2.5"></line>
+        <line x1="80" y1="192" x2="130" y2="192" stroke="#DC2626" stroke-width="2.5"></line>
+
+        <!-- ROLE' 与门 -->
+        <path d="M130,128 L180,128 A32,32 0 0 1 180,192 L130,192 Z" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></path>
+        <text x="155" y="164" text-anchor="middle" font-size="9" fill="#166534">与门</text>
+        <line x1="180" y1="160" x2="240" y2="160" stroke="#16A34A" stroke-width="2.5"></line>
+        <text x="196" y="152" font-size="9" font-weight="700" fill="#166534">ROLE'</text>
+        <line x1="240" y1="160" x2="240" y2="150" stroke="#16A34A" stroke-width="2.5"></line>
+        <line x1="240" y1="150" x2="280" y2="150" stroke="#16A34A" stroke-width="2.5"></line>
+
+        <!-- U41 -->
+        <rect x="280" y="110" width="190" height="340" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+        <text x="375" y="134" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS160 · U41</text>
+        <text x="375" y="150" text-anchor="middle" font-size="9.5" fill="#64748b">相位计数（模 4）</text>
+        <g font-size="10" fill="#374151">
+          <text x="288" y="158">CLK</text><text x="288" y="188">CLR̄</text><text x="288" y="218">LOAD̄</text>
+          <text x="288" y="248">ENP</text><text x="288" y="278">ENT</text>
+          <text x="288" y="308">A</text><text x="288" y="338">B</text><text x="288" y="368">C</text><text x="288" y="398">D</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="462" y="166">QA</text><text x="462" y="196">QB</text><text x="462" y="226">QC</text><text x="462" y="256">QD</text>
+          <text x="462" y="296">RCO</text>
+        </g>
+        <!-- LOAD/ENP/ENT → +5V -->
+        <line x1="280" y1="218" x2="255" y2="218" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="280" y1="248" x2="255" y2="248" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="280" y1="278" x2="255" y2="278" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="255" y1="218" x2="255" y2="278" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="255" y1="248" x2="235" y2="248" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M235,237 L230,248 L240,248 Z" fill="#DC2626"></path>
+        <text x="235" y="232" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="middle">+5V</text>
+        <!-- A~D → GND -->
+        <line x1="280" y1="308" x2="255" y2="308" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="280" y1="338" x2="255" y2="338" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="280" y1="368" x2="255" y2="368" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="280" y1="398" x2="255" y2="398" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="255" y1="308" x2="255" y2="398" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="255" y1="353" x2="240" y2="353" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1d" stroke-width="2"><line x1="226" y1="351" x2="242" y2="351"></line><line x1="230" y1="356" x2="238" y2="356"></line><line x1="233" y1="361" x2="235" y2="361"></line></g>
+        <text x="288" y="436" font-size="8.5" fill="#64748b">A~D 接 GND（防悬空）</text>
+        <text x="288" y="452" font-size="8.5" fill="#64748b">QC QD / RCO 悬空不用</text>
+
+        <!-- U42 -->
+        <rect x="660" y="130" width="180" height="200" rx="8" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"></rect>
+        <text x="750" y="154" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS139 · U42</text>
+        <text x="750" y="170" text-anchor="middle" font-size="9.5" fill="#64748b">2-4 译码（半片）</text>
+        <g font-size="10" fill="#374151">
+          <text x="668" y="188">A</text><text x="668" y="218">B</text><text x="668" y="248">Ḡ</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="832" y="188">Y0</text><text x="832" y="218">Y1</text><text x="832" y="248">Y2</text><text x="832" y="278">Y3</text>
+        </g>
+        <line x1="660" y1="248" x2="640" y2="248" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1d" stroke-width="2"><line x1="626" y1="246" x2="642" y2="246"></line><line x1="630" y1="251" x2="638" y2="251"></line><line x1="633" y1="256" x2="635" y2="256"></line></g>
+        <!-- QA→A, QB→B -->
+        <line x1="470" y1="162" x2="560" y2="162" stroke="#2563EB" stroke-width="2"></line>
+        <line x1="560" y1="162" x2="560" y2="184" stroke="#2563EB" stroke-width="2"></line>
+        <line x1="560" y1="184" x2="660" y2="184" stroke="#2563EB" stroke-width="2"></line>
+        <line x1="470" y1="192" x2="540" y2="192" stroke="#2563EB" stroke-width="2"></line>
+        <line x1="540" y1="192" x2="540" y2="214" stroke="#2563EB" stroke-width="2"></line>
+        <line x1="540" y1="214" x2="660" y2="214" stroke="#2563EB" stroke-width="2"></line>
+        <text x="505" y="154" font-size="9" fill="#64748b">QA（LSB）</text>
+        <text x="505" y="184" font-size="9" fill="#64748b">QB</text>
+
+        <!-- 非门 ×4 -->
+        <g>
+          <path d="M860,162 L900,170 L860,178 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="903" cy="170" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M860,192 L900,200 L860,208 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="903" cy="200" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M860,222 L900,230 L860,238 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="903" cy="230" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+          <path d="M860,252 L900,260 L860,268 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+          <circle cx="903" cy="260" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        </g>
+        <text x="880" y="150" font-size="8.5" fill="#64748b" text-anchor="middle">74LS04 非门 ×4</text>
+        <!-- Y0~Y3 → 非门 -->
+        <line x1="840" y1="184" x2="860" y2="170" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="840" y1="214" x2="860" y2="200" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="840" y1="244" x2="860" y2="230" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="840" y1="274" x2="860" y2="260" stroke="#7C3AED" stroke-width="2"></line>
+        <!-- T0~T3 输出 -->
+        <line x1="907" y1="170" x2="1060" y2="170" stroke="#B45309" stroke-width="2"></line>
+        <line x1="907" y1="200" x2="1060" y2="200" stroke="#B45309" stroke-width="2"></line>
+        <line x1="907" y1="230" x2="1060" y2="230" stroke="#B45309" stroke-width="2"></line>
+        <line x1="907" y1="260" x2="1060" y2="260" stroke="#B45309" stroke-width="2"></line>
+        <g font-size="10.5" font-weight="700">
+          <text x="1068" y="174" fill="#166534">T0 南北绿</text>
+          <text x="1068" y="204" fill="#B45309">T1 南北黄</text>
+          <text x="1068" y="234" fill="#166534">T2 东西绿</text>
+          <text x="1068" y="264" fill="#B45309">T3 东西黄</text>
+        </g>
+        <text x="1068" y="290" font-size="9" fill="#64748b">→ 第 4 节 灯逻辑</text>
+
+        <!-- 模4反馈：Y3 → 非门 → CLR̄ -->
+        <line x1="850" y1="274" x2="850" y2="740" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="850" y1="740" x2="300" y2="740" stroke="#DC2626" stroke-width="2"></line>
+        <g fill="#DC2626"><circle cx="850" cy="274" r="3"></circle></g>
+        <path d="M300,730 L300,750 L280,740 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+        <circle cx="277" cy="740" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        <line x1="273" y1="740" x2="200" y2="740" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="200" y1="740" x2="200" y2="188" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="200" y1="188" x2="280" y2="188" stroke="#DC2626" stroke-width="2"></line>
+        <text x="560" y="758" font-size="9.5" fill="#DC2626">模 4 反馈：Y3（T3 有效=0）→ 非门 → CLR̄（状态 11 清回 00，防止第 5 个 ROLE 跑飞到 100）</text>
+
+        <!-- 或门：PH_NS -->
+        <path d="M860,420 C875,445 875,475 860,500 M860,420 C900,430 912,445 912,460 C912,475 900,490 860,500" fill="none" stroke="#16A34A" stroke-width="2"></path>
+        <line x1="800" y1="438" x2="862" y2="438" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="800" y1="482" x2="862" y2="482" stroke="#16A34A" stroke-width="2"></line>
+        <text x="802" y="430" font-size="9" font-weight="700" fill="#166534">T0</text>
+        <text x="802" y="494" font-size="9" font-weight="700" fill="#166534">T1</text>
+        <line x1="912" y1="460" x2="990" y2="460" stroke="#16a34a" stroke-width="2"></line>
+        <text x="998" y="464" font-size="10.5" font-weight="700" fill="#166534">PH_NS → 图 2A 的 S1</text>
+
+        <!-- 或门：YEL -->
+        <path d="M860,550 C875,575 875,605 860,630 M860,550 C900,560 912,575 912,590 C912,605 900,620 860,630" fill="none" stroke="#B45309" stroke-width="2"></path>
+        <line x1="800" y1="568" x2="862" y2="568" stroke="#B45309" stroke-width="2"></line>
+        <line x1="800" y1="612" x2="862" y2="612" stroke="#B45309" stroke-width="2"></line>
+        <text x="802" y="560" font-size="9" font-weight="700" fill="#B45309">T1</text>
+        <text x="802" y="624" font-size="9" font-weight="700" fill="#B45309">T3</text>
+        <line x1="912" y1="590" x2="990" y2="590" stroke="#B45309" stroke-width="2"></line>
+        <text x="998" y="594" font-size="10.5" font-weight="700" fill="#B45309">YEL → 第 4 节黄灯闪烁允许</text>
+
+        <!-- 或门：PH_EW -->
+        <path d="M860,680 C875,705 875,735 860,760 M860,680 C900,690 912,705 912,720 C912,735 900,750 860,760" fill="none" stroke="#2563EB" stroke-width="2"></path>
+        <line x1="800" y1="698" x2="862" y2="698" stroke="#2563EB" stroke-width="2"></line>
+        <line x1="800" y1="742" x2="862" y2="742" stroke="#2563EB" stroke-width="2"></line>
+        <text x="802" y="690" font-size="9" font-weight="700" fill="#2563EB">T2</text>
+        <text x="802" y="754" font-size="9" font-weight="700" fill="#2563EB">T3</text>
+        <line x1="912" y1="720" x2="990" y2="720" stroke="#2563EB" stroke-width="2"></line>
+        <text x="998" y="724" font-size="10.5" font-weight="700" fill="#2563EB">PH_EW → 图 2A 东西轴 S1'</text>
+
+        <text x="770" y="800" font-size="10" fill="#64748b" text-anchor="middle">注：或门输入按信号名就近取自 T0~T3 公共线 · 74LS139 输出低有效，经非门变高有效后使用</text>
+      </svg>
+    </div>
+    <p style="font-size:12.5px;color:#86868b;margin-top:8px">状态循环：U41 输出 00→01→10→11 → 139 译出 T0→T1→T2→T3；Y3 反馈非门接 CLR̄ 保证第 4 个 ROLE 后回到 T0（模 4）。</p>
+  </div>
+
+  <div class="section">
+    <div class="label">U41 逐引脚接法</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:170px">引脚</th><th style="border-radius:0 6px 0 0">接法</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>CLK</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 ROLE' = ROLE ∧ EMG（74LS08 与门，EMG 来自第 1 节紧急开关。紧急时相位冻结）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>CLR̄</b> / <b>LOAD̄</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">都接 +5V（不清零、不装载）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>ENP、ENT</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">接 +5V（恒使能）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>A B C D</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">全部接 GND（LOAD̄ 恒 +5V，装载值不生效；接地仅防悬空。模 4 靠计数终值译码反馈，见下）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>QA QB</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">QA=LSB、QB=高位 → 接 U42 的 A、B 输入</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>QC QD</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">悬空不用（QC/QD 不参与模 4）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>RCO</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">悬空不用（模 4 不走 RCO 反馈）</td></tr>
+      <tr><td style="padding:7px 12px"><b>模 4 反馈（必须）</b></td><td style="padding:7px 12px"><b>必须接</b>：U42 的 Y3（T3）经 74LS04 取反接回 CLR̄——T3 结束瞬间（状态 11）清零回 00，CLR̄ 常态 1、清零脉冲仅一瞬；<b>否则第 5 个 ROLE 跑到 0100（QC=1）飞相</b></td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">U42（74LS139，用半片；另半片 Ḡ 接 +5V 闲置）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:170px">引脚</th><th style="border-radius:0 6px 0 0">接法</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>A、B</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">A ← U41 的 QA（低位）、B ← U41 的 QB（高位）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>Ḡ</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">GND（常通）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>Y0~Y3</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">注意 139 输出<b>低有效</b>：Y0=0 即 T0 有效。T0~T3 送第 4 节灯逻辑时各经一级非门（74LS04）变高有效，或灯逻辑直接用低有效设计（推荐前者，直观）</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">本节输出信号清单（第 4 节输入）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0">信号名</th><th>来源</th><th style="border-radius:0 6px 0 0">去向</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>T0~T3</b>（高有效）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">U42 Y0~Y3 经非门</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">第 4 节信号灯转换逻辑</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>PH_NS / PH_EW</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T0∨T1 / T2∨T3（74LS32）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">第 2 节装载网络 S 端</td></tr>
+      <tr><td style="padding:7px 12px"><b>YEL</b>（黄灯期）</td><td style="padding:7px 12px">T1∨T3</td><td style="padding:7px 12px">第 4 节黄灯闪烁允许</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">本节 Multisim 验证方法</div>
+    <ul>
+      <li>ROLE 输入手动接一个脉冲开关（单刀双掷接 +5V/GND 手动拨）：每拨一次，逻辑探针 T0~T3 应按 1000→0100→0010→0001 循环</li>
+      <li>状态跑飞检查：连续拨 10 次，T3 后必须回 T0（若停在中间说明模 4 反馈 Y3→非门→CLR̄ 没接好）</li>
+      <li>EMG 拨到紧急：ROLE' 恒 0，再拨脉冲开关 T 不动</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="note-blue"><b>本节元件：</b>74LS160 ×1（U41）、74LS139 ×1（U42）、74LS04 ×1（Y0~Y3 取反 + 模 4 反馈取反，7 门用 6 门）、74LS32 ×1（PH_NS、PH_EW、YEL 或门）、<b>无新增电阻电容 ✓</b> · <b>预计 ~1h15</b></div>
+  </div>
+</section>
+
+<!-- ================= 第 4 节 ================= -->
+<section id="s4" class="screen">
+  <div class="sec-banner"><b>第 4/6 节：信号灯转换器</b><span>预计 ~1 小时</span></div>
+  <h2>信号灯转换器 —— 灯光逻辑</h2>
+  <p class="subtitle">T0~T3 + FLASH_2Hz + EMG → 车辆 12 灯（红黄绿×4 方向）+ 行人 8 灯（红绿×4 方向，绿灯末 10s 闪烁）</p>
+
+  <div class="section">
+    <div class="label">电路图（SVG，门级连接 + LED 灯组）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1360 1010" style="width:100%;min-width:1040px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="680" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">第 4 节 · 信号灯转换器（门级电路图，南北轴完整 + 东西轴对称）</text>
+
+        <!-- 输入信号 -->
+        <g font-size="10.5" font-weight="700">
+          <text x="46" y="114" fill="#166534">T0</text>
+          <text x="46" y="184" fill="#B45309">T1</text>
+          <text x="98" y="254" fill="#16A34A" text-anchor="end">FLASH_2Hz</text>
+          <text x="46" y="334" fill="#166534">T2</text>
+          <text x="46" y="404" fill="#B45309">T3</text>
+          <text x="46" y="474" fill="#DC2626">EMG</text>
+          <text x="98" y="854" fill="#7C3AED" text-anchor="end">LAST10_NS</text>
+        </g>
+        <line x1="100" y1="110" x2="340" y2="110" stroke="#166534" stroke-width="2"></line>
+        <line x1="100" y1="180" x2="340" y2="180" stroke="#B45309" stroke-width="2"></line>
+        <line x1="100" y1="250" x2="320" y2="250" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="320" y1="250" x2="320" y2="205" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="320" y1="205" x2="340" y2="205" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="100" y1="330" x2="340" y2="330" stroke="#166534" stroke-width="2"></line>
+        <line x1="100" y1="400" x2="310" y2="400" stroke="#B45309" stroke-width="2"></line>
+        <line x1="310" y1="400" x2="310" y2="315" stroke="#B45309" stroke-width="2"></line>
+        <line x1="310" y1="315" x2="340" y2="315" stroke="#B45309" stroke-width="2"></line>
+        <line x1="100" y1="470" x2="200" y2="470" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="100" y1="850" x2="200" y2="850" stroke="#7C3AED" stroke-width="2"></line>
+
+        <!-- ¬EMG 非门 -->
+        <path d="M200,462 L240,470 L200,478 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+        <circle cx="243" cy="470" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        <text x="222" y="455" font-size="8.5" fill="#64748b" text-anchor="middle">非门</text>
+        <!-- ¬EMG 分发 -->
+        <line x1="247" y1="470" x2="290" y2="470" stroke="#B45309" stroke-width="2"></line>
+        <line x1="290" y1="470" x2="290" y2="130" stroke="#B45309" stroke-width="2" fill="none"></line>
+        <line x1="290" y1="130" x2="340" y2="130" stroke="#B45309" stroke-width="2"></line>
+        <line x1="290" y1="553" x2="340" y2="553" stroke="#B45309" stroke-width="2"></line>
+        <g fill="#B45309"><circle cx="290" cy="553" r="3"></circle></g>
+        <line x1="290" y1="470" x2="290" y2="640" stroke="#B45309" stroke-width="2"></line>
+        <line x1="290" y1="640" x2="340" y2="640" stroke="#B45309" stroke-width="2"></line>
+        <line x1="290" y1="470" x2="290" y2="470.1" stroke="#B45309" stroke-width="2"></line>
+        <g fill="#B45309"><circle cx="290" cy="470" r="3"></circle></g>
+        <text x="298" y="300" font-size="9" fill="#B45309" transform="rotate(-90 298 300)">¬EMG 分发（上：南北门 / 下：东西门）</text>
+        <!-- ¬EMG → 南北黄第三输入 -->
+        <line x1="290" y1="470" x2="290" y2="235" stroke="#B45309" stroke-width="2"></line>
+        <line x1="290" y1="235" x2="340" y2="235" stroke="#B45309" stroke-width="2"></line>
+
+        <!-- 南北绿 与门（2 输入） -->
+        <path d="M340,84 L390,84 A30,30 0 0 1 390,144 L340,144 Z" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></path>
+        <line x1="390" y1="114" x2="700" y2="114" stroke="#16A34A" stroke-width="2"></line>
+        <text x="362" y="118" font-size="9" fill="#166534" text-anchor="middle">与</text>
+
+        <!-- 南北黄 3 输入与门 -->
+        <path d="M340,160 L390,160 A45,45 0 0 1 390,250 L340,250 Z" fill="#FFF7E6" stroke="#B45309" stroke-width="2"></path>
+        <line x1="390" y1="205" x2="700" y2="205" stroke="#B45309" stroke-width="2"></line>
+        <text x="362" y="210" font-size="9" fill="#B45309" text-anchor="middle">与</text>
+
+        <!-- 南北红 3 输入或门 -->
+        <path d="M340,270 C355,295 355,335 340,360 M340,270 C380,280 392,295 392,315 C392,335 380,350 340,360" fill="none" stroke="#DC2626" stroke-width="2"></path>
+        <line x1="392" y1="315" x2="700" y2="315" stroke="#DC2626" stroke-width="2"></line>
+        <!-- EMG → 南北红第三输入 -->
+        <line x1="150" y1="470" x2="150" y2="345" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="150" y1="345" x2="340" y2="345" stroke="#DC2626" stroke-width="2"></line>
+        <g fill="#DC2626"><circle cx="150" cy="470" r="3"></circle></g>
+        <text x="362" y="319" font-size="9" fill="#DC2626" text-anchor="middle">或</text>
+
+        <!-- T2/T3/2Hz 下行到东西区 -->
+        <line x1="150" y1="330" x2="150" y2="533" stroke="#166534" stroke-width="2"></line>
+        <line x1="150" y1="533" x2="340" y2="533" stroke="#166534" stroke-width="2"></line>
+        <line x1="170" y1="400" x2="170" y2="610" stroke="#B45309" stroke-width="2"></line>
+        <line x1="170" y1="610" x2="340" y2="610" stroke="#B45309" stroke-width="2"></line>
+        <line x1="130" y1="250" x2="130" y2="587" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="130" y1="587" x2="340" y2="587" stroke="#16A34A" stroke-width="2"></line>
+        <g fill="#166534"><circle cx="150" cy="330" r="3"></circle></g>
+        <g fill="#B45309"><circle cx="170" cy="400" r="3"></circle></g>
+        <g fill="#16A34A"><circle cx="130" cy="250" r="3"></circle></g>
+
+        <!-- 东西绿 与门（T2, ¬EMG） -->
+        <path d="M340,503 L390,503 A30,30 0 0 1 390,563 L340,563 Z" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></path>
+        <line x1="390" y1="533" x2="700" y2="533" stroke="#16A34A" stroke-width="2"></line>
+        <text x="362" y="537" font-size="9" fill="#166534" text-anchor="middle">与</text>
+
+        <!-- 东西黄 3 输入与门 -->
+        <path d="M340,580 L390,580 A45,45 0 0 1 390,670 L340,670 Z" fill="#FFF7E6" stroke="#B45309" stroke-width="2"></path>
+        <line x1="390" y1="625" x2="700" y2="625" stroke="#B45309" stroke-width="2"></line>
+        <text x="362" y="630" font-size="9" fill="#B45309" text-anchor="middle">与</text>
+
+        <!-- 东西红 3 输入或门（T0,T1,EMG） -->
+        <path d="M340,690 C355,715 355,755 340,780 M340,690 C380,700 392,715 392,735 C392,755 380,770 340,780" fill="none" stroke="#DC2626" stroke-width="2"></path>
+        <line x1="392" y1="735" x2="700" y2="735" stroke="#DC2626" stroke-width="2"></line>
+        <text x="362" y="739" font-size="9" fill="#DC2626" text-anchor="middle">或</text>
+        <line x1="110" y1="110" x2="110" y2="705" stroke="#166534" stroke-width="2"></line>
+        <line x1="110" y1="705" x2="340" y2="705" stroke="#166534" stroke-width="2"></line>
+        <line x1="124" y1="180" x2="124" y2="735" stroke="#B45309" stroke-width="2"></line>
+        <line x1="124" y1="735" x2="340" y2="735" stroke="#B45309" stroke-width="2"></line>
+        <line x1="160" y1="470" x2="160" y2="975" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="160" y1="765" x2="340" y2="765" stroke="#DC2626" stroke-width="2"></line>
+        <g fill="#DC2626"><circle cx="160" cy="470" r="3"></circle></g>
+        <g fill="#166534"><circle cx="110" cy="110" r="3"></circle></g>
+        <g fill="#B45309"><circle cx="124" cy="180" r="3"></circle></g>
+
+        <!-- 行人区：GATE_NS 与行人灯 -->
+        <text x="680" y="812" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d1d1f">行人灯逻辑（南北向；东西向对称：LAST10_EW、T2 系）</text>
+        <!-- ¬LAST10 非门 -->
+        <path d="M200,842 L240,850 L200,858 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+        <circle cx="243" cy="850" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        <!-- LAST10 ∧ 2Hz 与门 -->
+        <path d="M310,832 L360,832 A25,25 0 0 1 360,882 L310,882 Z" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></path>
+        <line x1="250" y1="850" x2="310" y2="850" stroke="#B45309" stroke-width="2" fill="none"></line>
+        <line x1="250" y1="850" x2="250" y2="841" stroke="#B45309" stroke-width="2" stroke-dasharray="5,4"></line>
+        <line x1="250" y1="841" x2="310" y2="841" stroke="#B45309" stroke-width="2" stroke-dasharray="5,4"></line>
+        <text x="270" y="828" font-size="8.5" fill="#B45309">¬LAST10（虚线，同名网络，非新连线）</text>
+        <line x1="130" y1="250" x2="130" y2="873" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="130" y1="873" x2="310" y2="873" stroke="#16A34A" stroke-width="2"></line>
+        <!-- GATE 或门 -->
+        <path d="M420,825 C435,848 435,875 420,898 M420,825 C455,833 466,845 466,862 C466,879 455,891 420,898" fill="none" stroke="#7C3AED" stroke-width="2"></path>
+        <line x1="247" y1="850" x2="400" y2="850" stroke="#B45309" stroke-width="2"></line>
+        <line x1="400" y1="850" x2="400" y2="838" stroke="#B45309" stroke-width="2"></line>
+        <line x1="400" y1="838" x2="420" y2="838" stroke="#B45309" stroke-width="2"></line>
+        <line x1="360" y1="880" x2="400" y2="880" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="400" y1="880" x2="400" y2="886" stroke="#16a34a" stroke-width="2"></line>
+        <line x1="400" y1="886" x2="420" y2="886" stroke="#16A34A" stroke-width="2"></line>
+        <text x="505" y="850" font-size="9.5" font-weight="700" fill="#7C3AED" text-anchor="middle">GATE_NS = ¬LAST10 ∨ 2Hz</text>
+        <!-- 行人绿 与门（T0, GATE_NS） -->
+        <path d="M560,905 L610,905 A28,28 0 0 1 610,961 L560,961 Z" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"></path>
+        <line x1="466" y1="862" x2="560" y2="862" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="520" y1="862" x2="520" y2="920" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="520" y1="920" x2="560" y2="920" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="110" y1="110" x2="110" y2="946" stroke="#166534" stroke-width="2"></line>
+        <line x1="110" y1="946" x2="560" y2="946" stroke="#166534" stroke-width="2"></line>
+        <line x1="610" y1="933" x2="700" y2="933" stroke="#16A34A" stroke-width="2"></line>
+        <!-- ¬T0 非门 + 行人红或门 -->
+        <path d="M200,940 L240,948 L200,956 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+        <circle cx="243" cy="948" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        <line x1="110" y1="946" x2="200" y2="948" stroke="#166534" stroke-width="2" fill="none"></line>
+        <path d="M310,920 C325,943 325,968 310,990 M310,920 C345,928 356,938 356,955 C356,972 345,982 310,990" fill="none" stroke="#DC2626" stroke-width="2"></path>
+        <line x1="247" y1="948" x2="310" y2="948" stroke="#B45309" stroke-width="2"></line>
+        <line x1="160" y1="975" x2="310" y2="975" stroke="#DC2626" stroke-width="2"></line>
+        <text x="170" y="880" font-size="9" font-weight="700" fill="#DC2626">EMG</text>
+        <text x="235" y="986" font-size="9" font-weight="700" fill="#DC2626" text-anchor="middle">EMG</text>
+        <text x="360" y="944" font-size="10" font-weight="700" fill="#DC2626">行人红</text>
+        <line x1="356" y1="955" x2="700" y2="955" stroke="#DC2626" stroke-width="2"></line>
+
+        <!-- LED 灯组 -->
+        <g>
+          <!-- 北向车辆 -->
+          <circle cx="740" cy="114" r="12" fill="#22c55e"></circle><circle cx="740" cy="114" r="18" fill="none" stroke="#22c55e" stroke-width="2" opacity=".35"></circle>
+          <circle cx="740" cy="205" r="12" fill="#eab308"></circle><circle cx="740" cy="205" r="18" fill="none" stroke="#eab308" stroke-width="2" opacity=".35"></circle>
+          <circle cx="740" cy="315" r="12" fill="#ef4444"></circle><circle cx="740" cy="315" r="18" fill="none" stroke="#ef4444" stroke-width="2" opacity=".35"></circle>
+          <text x="740" y="346" font-size="9.5" fill="#374151" text-anchor="middle">北向车辆灯</text>
+          <!-- 南向车辆（并联） -->
+          <circle cx="830" cy="114" r="12" fill="#22c55e" opacity=".9"></circle><circle cx="830" cy="114" r="18" fill="none" stroke="#22c55e" stroke-width="2" opacity=".35"></circle>
+          <circle cx="830" cy="205" r="12" fill="#eab308" opacity=".9"></circle><circle cx="830" cy="205" r="18" fill="none" stroke="#eab308" stroke-width="2" opacity=".35"></circle>
+          <circle cx="830" cy="315" r="12" fill="#ef4444" opacity=".9"></circle><circle cx="830" cy="315" r="18" fill="none" stroke="#ef4444" stroke-width="2" opacity=".35"></circle>
+          <text x="830" y="346" font-size="9.5" fill="#374151" text-anchor="middle">南向车辆灯</text>
+          <!-- 东向 -->
+          <circle cx="740" cy="533" r="12" fill="#22c55e"></circle><circle cx="740" cy="533" r="18" fill="none" stroke="#22c55e" stroke-width="2" opacity=".35"></circle>
+          <circle cx="740" cy="625" r="12" fill="#eab308"></circle><circle cx="740" cy="625" r="18" fill="none" stroke="#eab308" stroke-width="2" opacity=".35"></circle>
+          <circle cx="740" cy="735" r="12" fill="#ef4444"></circle><circle cx="740" cy="735" r="18" fill="none" stroke="#ef4444" stroke-width="2" opacity=".35"></circle>
+          <text x="740" y="766" font-size="9.5" fill="#374151" text-anchor="middle">东向车辆灯</text>
+          <!-- 西向 -->
+          <circle cx="830" cy="533" r="12" fill="#22c55e" opacity=".9"></circle><circle cx="830" cy="533" r="18" fill="none" stroke="#22c55e" stroke-width="2" opacity=".35"></circle>
+          <circle cx="830" cy="625" r="12" fill="#eab308" opacity=".9"></circle><circle cx="830" cy="625" r="18" fill="none" stroke="#eab308" stroke-width="2" opacity=".35"></circle>
+          <circle cx="830" cy="735" r="12" fill="#ef4444" opacity=".9"></circle><circle cx="830" cy="735" r="18" fill="none" stroke="#ef4444" stroke-width="2" opacity=".35"></circle>
+          <text x="830" y="766" font-size="9.5" fill="#374151" text-anchor="middle">西向车辆灯</text>
+          <!-- 行人灯 -->
+          <circle cx="740" cy="933" r="12" fill="#22c55e"></circle><circle cx="740" cy="933" r="18" fill="none" stroke="#22c55e" stroke-width="2" opacity=".35"></circle>
+          <text x="740" y="930" font-size="8" fill="#fff" text-anchor="middle">行</text>
+          <circle cx="740" cy="975" r="12" fill="#ef4444" opacity=".55"></circle><circle cx="740" cy="975" r="18" fill="none" stroke="#ef4444" stroke-width="2" opacity=".35"></circle>
+          <text x="740" y="978" font-size="8" fill="#fff" text-anchor="middle">停</text>
+          <text x="812" y="960" font-size="9.5" fill="#374151">北/南侧行人灯 ×4（绿=末 10s 闪）</text>
+        </g>
+        <!-- 门输出到 LED 连线（北向） -->
+        <line x1="700" y1="114" x2="726" y2="114" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="700" y1="205" x2="726" y2="205" stroke="#B45309" stroke-width="2"></line>
+        <line x1="700" y1="315" x2="726" y2="315" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="700" y1="533" x2="726" y2="533" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="700" y1="625" x2="726" y2="625" stroke="#B45309" stroke-width="2"></line>
+        <line x1="700" y1="735" x2="726" y2="735" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="700" y1="933" x2="726" y2="933" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="700" y1="955" x2="712" y2="955" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="712" y1="955" x2="712" y2="975" stroke="#DC2626" stroke-width="2"></line>
+        <line x1="712" y1="975" x2="726" y2="975" stroke="#DC2626" stroke-width="2"></line>
+
+        <!-- 每灯 330Ω 说明 -->
+        <rect x="900" y="84" width="420" height="300" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="1110" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#1d1d1f">LED 接法（每灯相同）</text>
+        <g font-size="10" fill="#374151">
+          <text x="916" y="140">门输出 → 330Ω 限流电阻 → LED 阳极</text>
+          <text x="916" y="164">LED 阴极 → GND（330Ω E24 直插可购 ✓）</text>
+          <text x="916" y="188">同轴同色灯并联同一个门输出（北+南、</text>
+          <text x="916" y="212">东+西各共享一个门，扇出充足）</text>
+          <text x="916" y="236">Multisim：LED 选红色/黄色/绿色 LED，</text>
+          <text x="916" y="260">工作电压约 2V，5V−2V=3V/330Ω≈9mA</text>
+          <text x="916" y="292" font-weight="700">逻辑式速查：</text>
+          <text x="916" y="316">南北绿=T0∧¬EMG · 南北黄=T1∧2Hz∧¬EMG</text>
+          <text x="916" y="340">南北红=T2∨T3∨EMG · 行人绿=T0∧GATE_NS</text>
+          <text x="916" y="364">行人红=¬T0∨EMG（东西轴全部对称）</text>
+        </g>
+
+        <rect x="900" y="410" width="420" height="590" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="1110" y="436" text-anchor="middle" font-size="12" font-weight="700" fill="#1d1d1f">LAST10（绿灯末 10s）检测 · 南北轴</text>
+        <g font-size="10" fill="#374151">
+          <text x="916" y="466">输入：NS_BCD_TEN（第 2 节 U32 的 S1~S4）</text>
+          <text x="916" y="490">　　　NS_BCD_UNI（U31 的 S1~S4）</text>
+          <text x="916" y="522">唯一公式（穷举验证，4 门）：</text>
+          <text x="916" y="546">LAST10_NS = TEN_S1 ∨ (¬TEN_S2 ∧ ¬UNI_S1)</text>
+          <text x="916" y="578">　= 十位≥1（显示 10~19，TEN_S1=1）</text>
+          <text x="916" y="602">　∨ 十位=0 且个位 S1=0（00/02/04/06/08）</text>
+          <text x="916" y="626">门清单（与公式逐项对应）：</text>
+          <text x="916" y="650">非门 ×2：¬TEN_S2、¬UNI_S1</text>
+          <text x="916" y="674">与门 ×1：¬TEN_S2 ∧ ¬UNI_S1</text>
+          <text x="916" y="698">或门 ×1：TEN_S1 ∨ (¬TEN_S2∧¬UNI_S1) → LAST10_NS</text>
+          <text x="916" y="730">东西轴对称：TEN/UNI 换 EW_BCD</text>
+          <text x="916" y="754">74LS04 ×2、74LS08 ×1、74LS32 ×1（两轴共）</text>
+          <text x="916" y="786">※ 精确到"≤10 闪烁"边界差 1 秒，不影响演示</text>
+        </g>
+
+        <text x="680" y="1000" text-anchor="middle" font-size="10" fill="#64748b">东西轴车辆门电路与南北完全对称（T2↔T0、T3↔T1）；东西行人灯 = T2∧GATE_EW / ¬T2∨EMG，图中省略</text>
+      </svg>
+    </div>
+    <p style="font-size:12.5px;color:#86868b;margin-top:8px">每灯 = 门输出经 330Ω 驱动 LED；同轴同色灯并联同一门输出。行人绿灯经 GATE（末 10s 才放行 2Hz）实现闪烁；黄灯直接与 2Hz 相与实现每秒一闪。</p>
+  </div>
+
+  <div class="section">
+    <div class="label">逻辑式总表（与门输入直接照抄）</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0">灯</th><th>逻辑式</th><th style="border-radius:0 6px 0 0">说明</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>南北车辆绿</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T0 ∧ ¬EMG</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">北向、南向灯并联同一与门输出</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>南北车辆黄</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T1 ∧ FLASH_2Hz ∧ ¬EMG</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">2Hz 相与 → 每秒闪烁一次</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>南北车辆红</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T2 ∨ T3 ∨ EMG</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">含紧急强制红</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>东西车辆绿/黄/红</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T2 / T3 / (T0∨T1∨EMG)</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">对称</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>南北行人绿</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T0 ∧ GATE_NS（GATE_NS = ¬LAST10 ∨ 2Hz）</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">吸收律化简自 T0∧¬LAST10 ∨ T0∧LAST10∧2Hz：前 20s 常亮，末 10s 闪</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7"><b>南北行人红</b></td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">¬(T0) ∨ EMG</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">黄灯期 + 对方绿灯期 + 紧急</td></tr>
+      <tr><td style="padding:7px 12px"><b>东西行人绿/红</b></td><td style="padding:7px 12px">T2 ∧ GATE_EW / ¬T2∨EMG</td><td style="padding:7px 12px">GATE_EW = ¬LAST10_EW ∨ 2Hz，与南北对称</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">LAST10（绿灯末 10s）检测门</div>
+    <div class="note-gray">统一用<b>显示总线 BCD 判断</b>（取 74LS283 补码后的显示值 NS_BCD_TEN / NS_BCD_UNI，不判计数内部状态）：<b>显示 10~19</b> → 十位 S1=1，LAST10 成立；<b>显示 00~09</b> → 十位 S1=0、S2=0，再判个位 S1=0（0/2/4/6/8）成立；<b>显示 ≥20</b> → 十位 S2=1，不成立。唯一公式 <b>LAST10 = TEN_S1 ∨ (¬TEN_S2 ∧ ¬UNI_S1)</b>，4 门/轴（非门×2＋与门×1＋或门×1），东西轴对称。※ 精确到"≤10 闪烁"边界差 1 秒不影响演示效果。</div>
+  </div>
+
+  <div class="section">
+    <div class="note-blue"><b>本节元件（电阻电容核查 ✓）：</b>74LS08 ×3、74LS32 ×2、74LS04 ×2、彩色 LED（红/黄/绿）×20、<b>330Ω 限流电阻 ×20（E24 标准值，直插可购 ✓）</b>（每灯 1 只，5V/330Ω ≈ 10mA 驱动 LED）· <b>预计 ~1h</b></div>
+  </div>
+</section>
+
+<!-- ================= 第 5 节 ================= -->
+<section id="s5" class="screen">
+  <div class="sec-banner"><b>第 5/6 节：数码管显示系统</b><span>预计 ~1 小时 30 分</span></div>
+  <h2>数码管显示 —— A 版 16 位 / C 版 24 位</h2>
+  <p class="subtitle">74LS48 译码 + 共阴数码管 · 同轴并联总线 · 行人屏与车辆屏共用同轴数据</p>
+
+  <div class="section">
+    <div class="label">电路图（SVG，引脚级：单片 74LS48 ＋ 共阴数码管单元）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1240 640" style="width:100%;min-width:960px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="620" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">第 5 节 · 显示单元（每片 74LS48 相同，共 16 片 A 版 / 24 片 C 版）</text>
+
+        <!-- BCD 输入 -->
+        <g font-size="10.5" font-weight="700" fill="#7C3AED">
+          <text x="40" y="144">NS_BCD_UNI（个位）</text>
+        </g>
+        <g font-size="10" fill="#374151">
+          <text x="52" y="172">A（S1）</text><text x="52" y="202">B（S2）</text><text x="52" y="232">C（S3）</text><text x="52" y="262">D（S4）</text>
+        </g>
+        <line x1="120" y1="168" x2="250" y2="168" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="120" y1="198" x2="250" y2="198" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="120" y1="228" x2="250" y2="228" stroke="#7C3AED" stroke-width="2"></line>
+        <line x1="120" y1="258" x2="250" y2="258" stroke="#7C3AED" stroke-width="2"></line>
+
+        <!-- U51 74LS48 -->
+        <rect x="250" y="110" width="200" height="360" rx="8" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"></rect>
+        <text x="350" y="134" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d1d1f">74LS48 · U51</text>
+        <text x="350" y="150" text-anchor="middle" font-size="9.5" fill="#64748b">BCD→七段 译码驱动</text>
+        <g font-size="10" fill="#374151">
+          <text x="258" y="172">A</text><text x="258" y="202">B</text><text x="258" y="232">C</text><text x="258" y="262">D</text>
+          <text x="258" y="310">LT̄</text><text x="258" y="340">RBĪ</text><text x="258" y="370">BĪ/RBŌ</text>
+        </g>
+        <g font-size="10" fill="#374151" text-anchor="end">
+          <text x="442" y="172">QA</text><text x="442" y="202">QB</text><text x="442" y="232">QC</text>
+          <text x="442" y="262">QD</text><text x="442" y="292">QE</text><text x="442" y="322">QF</text><text x="442" y="352">QG</text>
+        </g>
+        <!-- LT/RBI → +5V -->
+        <line x1="250" y1="310" x2="225" y2="310" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="250" y1="340" x2="225" y2="340" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="225" y1="310" x2="225" y2="340" stroke="#1d1d1f" stroke-width="2"></line>
+        <line x1="225" y1="325" x2="205" y2="325" stroke="#1d1d1f" stroke-width="2"></line>
+        <path d="M205,314 L200,325 L210,325 Z" fill="#DC2626"></path>
+        <text x="205" y="309" font-size="9.5" font-weight="700" fill="#DC2626" text-anchor="middle">+5V</text>
+        <!-- BĪ → 标注 -->
+        <line x1="250" y1="370" x2="120" y2="370" stroke="#DC2626" stroke-width="2" stroke-dasharray="6 3"></line>
+        <text x="40" y="366" font-size="9.5" font-weight="700" fill="#DC2626">← 第 6 节 BI_FLASH</text>
+        <text x="40" y="384" font-size="8.5" fill="#64748b">（本节先接 +5V 调试）</text>
+
+        <!-- 330Ω ×7 -->
+        <g stroke="#334155" stroke-width="1.8" fill="#E2E8F0">
+          <rect x="500" y="161" width="44" height="14"></rect>
+          <rect x="500" y="191" width="44" height="14"></rect>
+          <rect x="500" y="221" width="44" height="14"></rect>
+          <rect x="500" y="251" width="44" height="14"></rect>
+          <rect x="500" y="281" width="44" height="14"></rect>
+          <rect x="500" y="311" width="44" height="14"></rect>
+          <rect x="500" y="341" width="44" height="14"></rect>
+        </g>
+        <text x="522" y="152" font-size="8.5" fill="#64748b" text-anchor="middle">330Ω ×7</text>
+        <g stroke="#1d1d1f" stroke-width="2">
+          <line x1="450" y1="168" x2="500" y2="168"></line><line x1="450" y1="198" x2="500" y2="198"></line>
+          <line x1="450" y1="228" x2="500" y2="228"></line><line x1="450" y1="258" x2="500" y2="258"></line>
+          <line x1="450" y1="288" x2="500" y2="288"></line><line x1="450" y1="318" x2="500" y2="318"></line>
+          <line x1="450" y1="348" x2="500" y2="348"></line>
+        </g>
+        <g stroke="#1d1d1f" stroke-width="2">
+          <line x1="544" y1="168" x2="580" y2="168"></line><line x1="544" y1="198" x2="580" y2="198"></line>
+          <line x1="544" y1="228" x2="580" y2="228"></line><line x1="544" y1="258" x2="580" y2="258"></line>
+          <line x1="544" y1="288" x2="580" y2="288"></line><line x1="544" y1="318" x2="580" y2="318"></line>
+          <line x1="544" y1="348" x2="580" y2="348"></line>
+        </g>
+        <g font-size="8.5" fill="#64748b" text-anchor="end">
+          <text x="594" y="161">a</text><text x="594" y="191">b</text><text x="594" y="221">c</text>
+          <text x="594" y="251">d</text><text x="594" y="281">e</text><text x="594" y="311">f</text><text x="566" y="341" text-anchor="end">g</text>
+        </g>
+
+        <!-- 数码管 -->
+        <rect x="610" y="120" width="180" height="340" rx="10" fill="#0F172A" stroke="#334155" stroke-width="2"></rect>
+        <text x="700" y="108" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d1d1f">共阴数码管（十位/个位各一只）</text>
+        <!-- 七段：显示 "3" -->
+        <g fill="#ff4040">
+          <rect x="668" y="170" width="64" height="13" rx="3"></rect>
+          <rect x="726" y="188" width="13" height="54" rx="3"></rect>
+          <rect x="726" y="252" width="13" height="54" rx="3"></rect>
+          <rect x="668" y="311" width="64" height="13" rx="3"></rect>
+          <rect x="668" y="240" width="64" height="13" rx="3"></rect>
+        </g>
+        <g fill="#3b1220">
+          <rect x="661" y="188" width="13" height="54" rx="3"></rect>
+          <rect x="661" y="252" width="13" height="54" rx="3"></rect>
+        </g>
+        <!-- 段引线（示意：折线连接） -->
+        <g stroke="#1d1d1f" stroke-width="1.6" fill="none" opacity=".75">
+          <line x1="580" y1="168" x2="640" y2="168"></line><line x1="640" y1="168" x2="640" y2="176"></line><line x1="640" y1="176" x2="668" y2="176"></line>
+          <line x1="580" y1="198" x2="630" y2="198"></line><line x1="630" y1="198" x2="630" y2="215"></line><line x1="630" y1="215" x2="726" y2="215"></line>
+          <line x1="580" y1="228" x2="620" y2="228"></line><line x1="620" y1="228" x2="620" y2="279"></line><line x1="620" y1="279" x2="726" y2="279"></line>
+          <line x1="580" y1="258" x2="610" y2="258"></line><line x1="610" y1="258" x2="610" y2="317"></line><line x1="610" y1="317" x2="668" y2="317"></line>
+          <line x1="580" y1="288" x2="600" y2="288"></line><line x1="600" y1="288" x2="600" y2="385"></line><line x1="600" y1="385" x2="661" y2="385"></line><line x1="661" y1="385" x2="661" y2="306"></line>
+          <line x1="580" y1="318" x2="590" y2="318"></line><line x1="590" y1="318" x2="590" y2="398"></line><line x1="590" y1="398" x2="655" y2="398"></line><line x1="655" y1="398" x2="655" y2="242"></line><line x1="655" y1="242" x2="668" y2="242"></line>
+          <line x1="580" y1="348" x2="650" y2="348"></line><line x1="650" y1="348" x2="650" y2="246"></line><line x1="650" y1="246" x2="668" y2="246"></line>
+        </g>
+        <!-- COM → GND -->
+        <line x1="700" y1="460" x2="700" y2="480" stroke="#1d1d1f" stroke-width="2"></line>
+        <g stroke="#1d1d1d" stroke-width="2"><line x1="686" y1="482" x2="714" y2="482"></line><line x1="691" y1="487" x2="709" y2="487"></line><line x1="696" y1="492" x2="704" y2="492"></line></g>
+        <text x="722" y="490" font-size="9.5" fill="#374151">COM（共阴）</text>
+        <text x="700" y="524" text-anchor="middle" font-size="10" fill="#64748b">暗段 e、f 示意（显示 "3"）</text>
+
+        <!-- 并联扩展 -->
+        <rect x="850" y="110" width="360" height="360" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="1030" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#1d1d1f">同轴并联扩展（总线复制）</text>
+        <g font-size="10" fill="#374151">
+          <text x="866" y="170">本图的 A B C D 即总线 NS_BCD_UNI。</text>
+          <text x="866" y="194">同轴其余屏（南向、北行人、南行人）</text>
+          <text x="866" y="218">各再放 1 组 U+数码管，A B C D 并联</text>
+          <text x="866" y="242">到同 4 根总线线上（输入高阻，随意并）</text>
+          <text x="866" y="276" font-weight="700">规模对照：</text>
+          <text x="866" y="300">A 版：南北 4 屏 + 东西 4 屏 = 16 位</text>
+          <text x="866" y="324">C 版：行人屏翻倍 → 24 位（纯并联）</text>
+          <text x="866" y="358" font-weight="700">十位片：</text>
+          <text x="866" y="382">同图复制，输入换 NS_BCD_TEN</text>
+          <text x="866" y="406">（东西轴换 EW_BCD_*）</text>
+          <text x="866" y="440" font-weight="700">BĪ 全部并联：</text>
+          <text x="866" y="464">16/24 片的 BĪ 接同一根 BI_FLASH</text>
+        </g>
+
+        <text x="620" y="620" text-anchor="middle" font-size="10.5" fill="#64748b">每段均串 330Ω（7×16=112 只，C 版 168 只，E24 直插可购 ✓）· Multisim 数码管选 Seven_Seg_Com_K（共阴）</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">接线要点</div>
+    <ul>
+      <li><b>每块两位屏 = 2 片 74LS48 + 2 只共阴数码管</b>：十位片接总线十位、个位片接总线个位</li>
+      <li><b>48 与数码管之间每段串 330Ω</b>（7 段 × 16 位 = 112 只，E24 标准值直插可购 ✓；批量接线建议先焊一段验证再复制）</li>
+      <li><b>共阴数码管 COM 接 GND</b>；Multisim 元件库选 DCD-7SEG（共阴 Seven_seg_display）</li>
+      <li><b>BĪ 引脚预留</b>：全部 48 的 BĪ 并联引出一根线到第 6 节（紧急闪烁用），本节先接 +5V 调试</li>
+      <li>前导零处理：RBĪ 接 +5V 保留（"03"比" 3"更符合倒计时习惯）</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="note-blue"><b>本节元件（电阻电容核查 ✓）：</b>74LS48 ×16（A 版）→ ×24（C 版）、共阴数码管 ×16 → ×24、<b>330Ω 电阻 ×112 → ×168（E24 直插 ✓）</b> · <b>预计 A 版 ~1h30，C 版再加 30min</b></div>
+  </div>
+</section>
+
+<!-- ================= 第 6 节 ================= -->
+<section id="s6" class="screen">
+  <div class="sec-banner"><b>第 6/6 节：紧急模式整合与系统联调</b><span>预计 ~1 小时 30 分</span></div>
+  <h2>紧急模式整合 + 系统联调</h2>
+  <p class="subtitle">把 EMG 的三路作用接全 · 全系统 56s 周期联调 · 验收清单</p>
+
+  <div class="section">
+    <div class="label">电路图（SVG，门级连接）</div>
+    <div style="border:1px solid #e5e5e7;border-radius:12px;padding:10px;background:#ffffff;overflow-x:auto">
+      <svg viewBox="0 0 1240 620" style="width:100%;min-width:960px;height:auto;display:block" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" xmlns="http://www.w3.org/2000/svg">
+        <text x="620" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1d1d1f">第 6 节 · 紧急模式整合（EMG 三路分发 + BI_FLASH 门级电路）</text>
+
+        <!-- EMG 输入 -->
+        <text x="60" y="120" font-size="11" font-weight="700" fill="#DC2626">EMG（第 1 节开关 + 1kΩ 下拉）</text>
+        <line x1="40" y1="132" x2="40" y2="470" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="40" y1="132" x2="200" y2="132" stroke="#DC2626" stroke-width="2.5"></line>
+
+        <!-- ¬EMG 非门 -->
+        <path d="M200,124 L240,132 L200,140 Z" fill="#fff" stroke="#B45309" stroke-width="2"></path>
+        <circle cx="243" cy="132" r="3.5" fill="none" stroke="#B45309" stroke-width="2"></circle>
+        <text x="220" y="116" font-size="8.5" fill="#64748b" text-anchor="middle">非门</text>
+
+        <!-- FLASH_2Hz 输入 -->
+        <text x="60" y="185" font-size="11" font-weight="700" fill="#16A34A">FLASH_2Hz（555 OUT）</text>
+        <line x1="190" y1="192" x2="300" y2="192" stroke="#16A34A" stroke-width="2.5"></line>
+
+        <!-- BI_FLASH 或门 -->
+        <path d="M330,110 C345,135 345,180 330,205 M330,110 C365,118 378,132 378,157 C378,182 365,197 330,205" fill="none" stroke="#7C3AED" stroke-width="2"></path>
+        <line x1="247" y1="132" x2="330" y2="132" stroke="#B45309" stroke-width="2" fill="none"></line>
+        <line x1="247" y1="132" x2="300" y2="132" stroke="#B45309" stroke-width="2"></line>
+        <line x1="300" y1="132" x2="300" y2="128" stroke="#B45309" stroke-width="2"></line>
+        <line x1="300" y1="128" x2="330" y2="128" stroke="#B45309" stroke-width="2"></line>
+        <line x1="190" y1="192" x2="300" y2="192" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="300" y1="192" x2="300" y2="188" stroke="#16A34A" stroke-width="2"></line>
+        <line x1="300" y1="188" x2="330" y2="188" stroke="#16A34A" stroke-width="2"></line>
+        <text x="352" y="163" font-size="9" fill="#7C3AED" text-anchor="middle">或</text>
+        <line x1="378" y1="157" x2="520" y2="157" stroke="#7C3AED" stroke-width="2.5"></line>
+        <text x="530" y="150" font-size="11.5" font-weight="700" fill="#7C3AED">BI_FLASH</text>
+        <text x="530" y="168" font-size="9.5" fill="#64748b">= ¬EMG ∨ 2Hz</text>
+        <line x1="640" y1="157" x2="740" y2="157" stroke="#7C3AED" stroke-width="2.5"></line>
+        <path d="M740,152 L752,157 L740,162 Z" fill="#7C3AED"></path>
+        <text x="760" y="150" font-size="10.5" font-weight="700" fill="#7C3AED">→ 全部 74LS48 的 BĪ/RBŌ</text>
+        <text x="760" y="168" font-size="9.5" fill="#64748b">（A 版 16 片 / C 版 24 片并联同一根线）</text>
+
+        <!-- 真值说明 -->
+        <rect x="60" y="250" width="520" height="150" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="320" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#1d1d1f">BI_FLASH 工作逻辑</text>
+        <g font-size="10.5" fill="#374151">
+          <text x="76" y="306">正常运行（EMG=1）：¬EMG=1 → 或门恒 1 → BĪ=1，数码管正常显示</text>
+          <text x="76" y="334">紧急模式（EMG=0）：¬EMG=0 → BĪ 跟随 2Hz → 数字以每秒两拍闪烁</text>
+          <text x="76" y="362">解除恢复（EMG=1）：BĪ 回 1，显示从冻结值继续（无跳变）</text>
+        </g>
+
+        <!-- EMG 三路分发 -->
+        <text x="400" y="462" font-size="9" fill="#DC2626" text-anchor="middle" font-weight="700">EMG 分发 ↓（三路同时触发）</text>
+        <line x1="40" y1="470" x2="740" y2="470" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="160" y1="470" x2="160" y2="490" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="450" y1="470" x2="450" y2="490" stroke="#DC2626" stroke-width="2.5"></line>
+        <line x1="740" y1="470" x2="740" y2="490" stroke="#DC2626" stroke-width="2.5"></line>
+        <g fill="#DC2626"><circle cx="160" cy="470" r="3.5"></circle><circle cx="450" cy="470" r="3.5"></circle><circle cx="740" cy="470" r="3.5"></circle></g>
+
+        <g>
+          <rect x="40" y="490" width="240" height="100" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+          <text x="160" y="516" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d1d1f">① 时钟门控（第 1 节已接）</text>
+          <g font-size="9.5" fill="#374151" text-anchor="middle">
+            <text x="160" y="540">EMG → 74LS08 与门 1B</text>
+            <text x="160" y="560">CLK_GATED = 1Hz ∧ EMG → 0</text>
+            <text x="160" y="580">全部 74LS160 计数冻结</text>
+          </g>
+        </g>
+        <g>
+          <rect x="330" y="490" width="240" height="100" rx="10" fill="#FFF7E6" stroke="#B45309" stroke-width="2"></rect>
+          <text x="450" y="516" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d1d1f">② 灯强制全红（第 4 节已接）</text>
+          <g font-size="9.5" fill="#374151" text-anchor="middle">
+            <text x="450" y="540">EMG → 红灯或门第三输入</text>
+            <text x="450" y="560">南北红=T2∨T3∨EMG → 1</text>
+            <text x="450" y="580">四方向红灯全亮</text>
+          </g>
+        </g>
+        <g>
+          <rect x="620" y="490" width="240" height="100" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2"></rect>
+          <text x="740" y="516" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d1d1f">③ 数字闪烁（本节新增）</text>
+          <g font-size="9.5" fill="#374151" text-anchor="middle">
+            <text x="740" y="540">BI_FLASH（上图或门输出）</text>
+            <text x="740" y="560">→ 74LS48 的 BĪ（低有效熄灭）</text>
+            <text x="740" y="580">=0 时整屏灭 → 2Hz 闪烁</text>
+          </g>
+        </g>
+
+        <!-- 右侧联调要点 -->
+        <rect x="660" y="250" width="540" height="150" rx="10" fill="#FAFAFA" stroke="#E5E5E7"></rect>
+        <text x="930" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#1d1d1f">本节接线清单（仅 2 处新增）</text>
+        <g font-size="10.5" fill="#374151">
+          <text x="676" y="306">1. 74LS04 非门 ×1：EMG → 非门 → ¬EMG（或门输入 1）</text>
+          <text x="676" y="334">2. 74LS32 或门 ×1：¬EMG、FLASH_2Hz → BI_FLASH</text>
+          <text x="676" y="362">3. BI_FLASH 一根线并联到全部 48 的 BĪ（第 5 节已预留）</text>
+          <text x="676" y="390">无新增电阻电容 ✓ · 其余作用①②在前面各节已完成</text>
+        </g>
+
+        <text x="620" y="612" text-anchor="middle" font-size="10" fill="#64748b">联调验收见下方清单 · 全系统信号闭环：EMG 同时管时钟、灯、显示，三者由同一开关同步触发</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">本节仅需新增的一处接线</div>
+    <div class="note-gray"><b>BI_FLASH 信号：</b>74LS04 一级非门（EMG 取反）与 2Hz 接或门（74LS32）：正常时 ¬EMG=1 → BĪ 恒 1（常亮）；紧急时 ¬EMG=0 → BĪ 跟随 2Hz → 数码管整屏以 2Hz 闪烁。<br><b>接线：</b>74LS08 引脚 3（CLK_GATED）已有，新增 04 的一个非门 + 32 的一个或门：输入 ¬EMG 和 FLASH_2Hz，输出接全部 16 片（C 版 24 片）74LS48 的 BĪ/RBŌ 引脚（第 5 节已预留并联线）。</div>
+  </div>
+
+  <div class="section">
+    <div class="label">系统联调验收清单</div>
+    <table>
+      <tbody><tr class="thead-dark"><th style="border-radius:6px 0 0 0;width:50px">#</th><th>检查项</th><th style="border-radius:0 6px 0 0">预期现象</th></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">1</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">上电初始化</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">数码管直接显示 30/33（不经过随机数）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">2</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T0→T1 换相</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">南北 30→00 后：南北转黄闪 3→00，东西仍红</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">3</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">黄灯闪烁</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">黄灯每秒亮灭一次（2Hz）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">4</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">T1→T2 换相</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">南北黄 00 后：东西绿 20→00，南北红、行人切换</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">5</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">行人绿灯末 10s</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">本轴行人绿灯从剩 10s 起闪烁，机动车绿灯常亮</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">6</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">完整周期</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">56s 一轮回到 T0（用秒表核对 ±1s）</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">7</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">方案切换</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">拨 SW → 下一相位起变成 20/5/20/5，周期 50s</td></tr>
+      <tr><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">8</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">紧急触发</td><td style="padding:7px 12px;border-bottom:1px solid #e5e5e7">拨 EMG：全方向红灯 + 数字 2Hz 闪烁 + 倒计时冻结</td></tr>
+      <tr><td style="padding:7px 12px">9</td><td style="padding:7px 12px">紧急解除</td><td style="padding:7px 12px">恢复后从冻结点继续（数字无缝衔接）</td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="label">联调常见故障速查</div>
+    <ul>
+      <li><b>换相瞬间两轴同时 00：</b>两轴装载网络 S 端接反（PH_NS/PH_EW 对调验证）</li>
+      <li><b>数码管某段常暗：</b>该段 330Ω 虚焊或 48 对应 QA~QG 断线</li>
+      <li><b>紧急解除后跳相：</b>检查第 3 节 ROLE' 与门是否正确（EMG 是否串入）</li>
+      <li><b>周期漂移：</b>示波器复核 555（应为 2.00Hz±5%），电解电容容差大时换 CBB 电容</li>
+      <li><b>方案切换后时序错乱：</b>U22/U22'（南北）与 U24'/U23（东西）的 B 组电平接错——按第 2 节装载值总表逐位核对</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="note-blue"><b>本节元件（电阻电容核查 ✓）：</b>74LS04 ×1（新增非门）、74LS32 ×1（新增或门）、<b>无新增电阻电容 ✓</b> · <b>预计联调 ~1h30</b></div>
+  </div>
+</section>
+
+<!-- ================= 底部进度导航 ================= -->
+<nav class="navbar">
+  <span class="pill done" id="p1" onclick="show(1)">1 脉冲源 45min</span>
+  <span class="pill done active" id="p2" onclick="show(2)">2 计时链 ~2h</span>
+  <span class="pill done" id="p3" onclick="show(3)">3 主控 ~1h15</span>
+  <span class="pill done" id="p4" onclick="show(4)">4 灯逻辑 ~1h</span>
+  <span class="pill done" id="p5" onclick="show(5)">5 显示 ~1h30</span>
+  <span class="pill" id="p6" onclick="show(6)">6 紧急+联调 ~1h30</span>
+  <span class="nav-hint">点击序号切换章节</span>
+</nav>
+
+<script>
+function show(n) {
+  document.querySelectorAll('section.screen').forEach(s => s.classList.remove('show'));
+  document.getElementById('s' + n).classList.add('show');
+  document.querySelectorAll('.pill:not(.disabled)').forEach(p => p.classList.remove('active'));
+  document.getElementById('p' + n).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+
+
+<div data-trae-edit-ui="true" class="trae-image-download-btn" title="Download image" style="position: fixed; display: none; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: var(--trae-bg-menu, #222427); border: 1px solid var(--trae-border-l2, rgba(255,255,255,0.12)); box-shadow: var(--trae-floating-shadow, 0px 2px 8px 0px rgba(0,0,0,0.2)); color: var(--trae-icon-default, #f5f9fe); cursor: pointer; z-index: 89990; transition: background 0.15s; pointer-events: auto;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 2v8m0 0L5 7m3 3l3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg></div></body></html>
